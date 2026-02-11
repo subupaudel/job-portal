@@ -1,6 +1,7 @@
 package com.example.jobportal.service;
 
 import com.example.jobportal.dto.LoginRequest;
+import com.example.jobportal.dto.LoginResponse;
 import com.example.jobportal.dto.RegisterRequest;
 import com.example.jobportal.entity.User;
 import com.example.jobportal.enums.Role;
@@ -11,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.jobportal.dto.Response;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 
@@ -32,7 +34,8 @@ public class UserServiceImpl implements UserService {
                 .name(request.getName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.ROLE_JOBSEEKER)
+                .role(request.getRole())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         userRepository.save(user);
@@ -41,21 +44,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Response loginUser(LoginRequest request) {
-        Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
-
-        if (userOpt.isEmpty()) {
-            return new Response("Invalid email or password", false);
-        }
-
-        User user = userOpt.get();
+    public LoginResponse loginUser(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return new Response("Invalid email or password", false);
+            throw new RuntimeException("Invalid email or password");
         }
 
-        String token = jwtUtil.generateToken(user.getEmail());
+        String token = jwtUtil.generateToken(user.getId(), user.getEmail());
 
-        return new Response("Login successful", true, token);
-    }
+
+        return LoginResponse.builder()
+                .token(token)
+                .role(user.getRole().name())
+                .userId(user.getId())
+                .email(user.getEmail())
+                .build();    }
 }
