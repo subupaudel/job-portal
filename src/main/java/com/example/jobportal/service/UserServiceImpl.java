@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.example.jobportal.dto.Response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -60,5 +61,11 @@ public class UserServiceImpl implements UserService {
                 .role(user.getRole().name())
                 .userId(user.getId())
                 .email(user.getEmail())
-                .build();    }
+                .build();
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
 }

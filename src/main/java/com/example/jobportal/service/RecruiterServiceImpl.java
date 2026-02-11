@@ -50,7 +50,7 @@ public class RecruiterServiceImpl implements RecruiterService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Recruiter recruiter = recruiterRepository.findByUserId(user.getId())  // or findByUser(user) if repo expects User
+        Recruiter recruiter = recruiterRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new RuntimeException("Recruiter profile not found"));
 
         return ProfileResponse.builder()

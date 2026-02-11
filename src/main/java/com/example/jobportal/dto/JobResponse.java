@@ -16,4 +16,5 @@ public class JobResponse {
     private BigDecimal salary;
     private JobStatus status;
     private Long recruiterId;
+    private String recruiterName;
 }

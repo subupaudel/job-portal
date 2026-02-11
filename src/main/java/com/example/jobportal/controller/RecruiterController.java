@@ -36,6 +36,16 @@ public class RecruiterController {
         return recruiterService.updateProfile(userId, request);
     }
 
+    @PutMapping("/profile")
+    public ProfileResponse update(
+            @RequestBody ProfileRequest request,
+            @RequestHeader("Authorization") String authHeader) {
+
+        String token = jwtUtil.extractToken(authHeader);
+        Long userId = jwtUtil.getUserIdFromToken(token);
+        return recruiterService.updateProfile(userId, request);
+    }
+
     @GetMapping("/profile")
     public ProfileResponse getProfile(@RequestHeader("Authorization") String authHeader) {
 

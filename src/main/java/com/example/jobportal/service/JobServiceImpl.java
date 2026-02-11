@@ -6,6 +6,7 @@ import com.example.jobportal.entity.Job;
 import com.example.jobportal.entity.Recruiter;
 import com.example.jobportal.enums.JobStatus;
 import com.example.jobportal.repository.JobRepository;
+import com.example.jobportal.repository.RecruiterRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 public class JobServiceImpl implements JobService {
 
     private final JobRepository jobRepository;
+    private final RecruiterRepository recruiterRepository;
 
     @Override
     public JobResponse createJob(Recruiter recruiter, JobRequest request) {
@@ -66,6 +68,11 @@ public class JobServiceImpl implements JobService {
     }
 
     private JobResponse mapToResponse(Job job) {
+
+        Long recruiterId = job.getRecruiter().getId();
+        Recruiter recruiter = recruiterRepository.findByUserId(recruiterId)
+                .orElseThrow(() -> new RuntimeException("Recruiter profile not found"));
+
         return JobResponse.builder()
                 .id(job.getId())
                 .title(job.getTitle())
@@ -74,6 +81,7 @@ public class JobServiceImpl implements JobService {
                 .salary(job.getSalary())
                 .status(job.getStatus())
                 .recruiterId(job.getRecruiter().getId())
+                .recruiterName(recruiter.getCompanyName())
                 .build();
     }
     @Override
