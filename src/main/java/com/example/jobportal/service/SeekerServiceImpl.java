@@ -1,9 +1,7 @@
 package com.example.jobportal.service;
 
-import com.example.jobportal.dto.ProfileResponse;
 import com.example.jobportal.dto.SeekerRequest;
 import com.example.jobportal.dto.SeekerResponse;
-import com.example.jobportal.entity.Recruiter;
 import com.example.jobportal.entity.Seeker;
 import com.example.jobportal.entity.User;
 import com.example.jobportal.repository.SeekerRepository;

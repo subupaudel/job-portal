@@ -4,7 +4,6 @@ import com.example.jobportal.dto.LoginRequest;
 import com.example.jobportal.dto.LoginResponse;
 import com.example.jobportal.dto.RegisterRequest;
 import com.example.jobportal.entity.User;
-import com.example.jobportal.enums.Role;
 import com.example.jobportal.repository.UserRepository;
 import com.example.jobportal.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +13,6 @@ import com.example.jobportal.dto.Response;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 
 @Service

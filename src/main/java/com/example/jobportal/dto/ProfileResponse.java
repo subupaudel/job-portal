@@ -10,8 +10,15 @@ public class ProfileResponse {
     private Long userId;
     private String email;
     private String role;
-
     private String companyName;
+    private String companyEmail;
+    private String contactPerson;
+    private String phoneNumber;
+    private String companyWebsite;
+    private String companyAddress;
+    private String industryType;
+    private String panNumber;
     private String description;
-    private Boolean approved;
+    private String logoUrl;
+    private boolean approved;
 }

@@ -2,7 +2,7 @@ package com.example.jobportal.controller;
 
 import com.example.jobportal.dto.JobRequest;
 import com.example.jobportal.dto.JobResponse;
-import com.example.jobportal.dto.ProfileRequest;
+import com.example.jobportal.dto.RecruiterRequest;
 import com.example.jobportal.dto.ProfileResponse;
 import com.example.jobportal.entity.Recruiter;
 import com.example.jobportal.repository.RecruiterRepository;
@@ -26,19 +26,20 @@ public class RecruiterController {
     private final JwtUtil jwtUtil;
     private final RecruiterRepository recruiterRepository;
 
-    @PostMapping("/profile")
+    @PostMapping(value = "/profile", consumes = "multipart/form-data")
     public ProfileResponse updateProfile(
-            @RequestBody ProfileRequest request,
+            @ModelAttribute RecruiterRequest request,
             @RequestHeader("Authorization") String authHeader) {
 
         String token = jwtUtil.extractToken(authHeader);
         Long userId = jwtUtil.getUserIdFromToken(token);
+
         return recruiterService.updateProfile(userId, request);
     }
 
     @PutMapping("/profile")
     public ProfileResponse update(
-            @RequestBody ProfileRequest request,
+            @RequestBody RecruiterRequest request,
             @RequestHeader("Authorization") String authHeader) {
 
         String token = jwtUtil.extractToken(authHeader);

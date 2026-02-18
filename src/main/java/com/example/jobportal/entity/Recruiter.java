@@ -1,11 +1,17 @@
 package com.example.jobportal.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Entity
-@Table(name = "recruiters")
-@Getter
+@Table(
+        name = "recruiters",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "pan_number"),
+                @UniqueConstraint(columnNames = "company_email")
+        }
+)@Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,10 +27,43 @@ public class Recruiter {
     private User user;
 
     @Column(nullable = false)
+    @NotBlank
     private String companyName;
 
+    @Column(length = 1000, name = "company_email", nullable = false)
+    @NotBlank
+    private String companyEmail;
+
     @Column(length = 1000)
+    @NotBlank
+    private String contactPerson;
+
+    @Column(length = 1000)
+    @NotBlank
+    private String phoneNumber;
+
+    @Column(length = 1000)
+    @NotBlank
+    private String companyWebsite;
+
+    @Column(length = 1000)
+    @NotBlank
+    private String companyAddress;
+
+    @Column(length = 1000)
+    @NotBlank
+    private String industryType;
+
+    @Column(length = 1000, name = "pan_number", nullable = false)
+    @NotBlank
+    private String panNumber;
+
+    @Column(length = 1000)
+    @NotBlank
     private String description;
+
+    @Column(length = 1000)
+    private String companyLogo;
 
     @Column(nullable = false)
     private boolean approved = false;
