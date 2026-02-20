@@ -6,11 +6,7 @@ import lombok.*;
 
 @Entity
 @Table(
-        name = "recruiters",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = "pan_number"),
-                @UniqueConstraint(columnNames = "company_email")
-        }
+        name = "recruiters"
 )@Getter
 @Setter
 @NoArgsConstructor
@@ -30,7 +26,7 @@ public class Recruiter {
     @NotBlank
     private String companyName;
 
-    @Column(length = 1000, name = "company_email", nullable = false)
+    @Column(length = 1000, name = "company_email", nullable = false, unique = true)
     @NotBlank
     private String companyEmail;
 
@@ -54,7 +50,7 @@ public class Recruiter {
     @NotBlank
     private String industryType;
 
-    @Column(length = 1000, name = "pan_number", nullable = false)
+    @Column(length = 1000, name = "pan_number", nullable = false, unique = true)
     @NotBlank
     private String panNumber;
 
@@ -64,6 +60,8 @@ public class Recruiter {
 
     @Column(length = 1000)
     private String companyLogo;
+
+    private String publicId;
 
     @Column(nullable = false)
     private boolean approved = false;

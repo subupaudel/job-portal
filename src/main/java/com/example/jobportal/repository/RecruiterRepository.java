@@ -9,5 +9,8 @@ public interface RecruiterRepository extends JpaRepository<Recruiter, Long> {
 
     Optional<Recruiter> findByUserId(Long userId);
     Recruiter getRecruiterByUserId(Long userId);
+    boolean existsByPanNumberAndUserIdNot(String panNumber, Long userId);
+
+    boolean existsByCompanyEmailAndUserIdNot(String companyEmail, Long userId);
 
 }

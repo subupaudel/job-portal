@@ -4,6 +4,7 @@ import com.example.jobportal.dto.LoginRequest;
 import com.example.jobportal.dto.LoginResponse;
 import com.example.jobportal.dto.RegisterRequest;
 import com.example.jobportal.entity.User;
+import com.example.jobportal.exception.JobException;
 import com.example.jobportal.repository.UserRepository;
 import com.example.jobportal.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Response registerUser(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            return new Response("User already exists with email: " + request.getEmail(), false);
+            throw new JobException("User already exists with this email.");
         }
 
         User user = User.builder()
@@ -45,10 +46,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public LoginResponse loginUser(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new JobException("Invalid email or password"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid email or password");
+            throw new JobException("Invalid email or password");
         }
 
         String token = jwtUtil.generateToken(user.getId(), user.getEmail());

@@ -1,10 +1,13 @@
 package com.example.jobportal.service;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.example.jobportal.cloudinary.CloudinaryService;
 import com.example.jobportal.dto.RecruiterRequest;
 import com.example.jobportal.dto.ProfileResponse;
 import com.example.jobportal.entity.Recruiter;
 import com.example.jobportal.entity.User;
+import com.example.jobportal.exception.JobException;
 import com.example.jobportal.repository.RecruiterRepository;
 import com.example.jobportal.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,7 @@ public class RecruiterServiceImpl implements RecruiterService {
     private final UserRepository userRepository;
     private final RecruiterRepository recruiterRepository;
     private final CloudinaryService  cloudinaryService;
+    private final Cloudinary cloudinary;
 
     @Override
     public ProfileResponse updateProfile(Long userId, RecruiterRequest request) {
@@ -31,6 +35,20 @@ public class RecruiterServiceImpl implements RecruiterService {
                                 .approved(false)
                                 .build()
                 );
+
+        if (request.getCompanyEmail() != null &&
+                !request.getCompanyEmail().equals(recruiter.getCompanyEmail()) &&
+                recruiterRepository.existsByCompanyEmailAndUserIdNot(request.getCompanyEmail(), userId)) {
+
+            throw new JobException("Company email already in use.");
+        }
+
+        if (request.getPanNumber() != null &&
+                !request.getPanNumber().equals(recruiter.getPanNumber()) &&
+                recruiterRepository.existsByPanNumberAndUserIdNot(request.getPanNumber(), userId)) {
+
+            throw new JobException("PAN number already registered.");
+        }
 
         if (request.getCompanyName() != null)
             recruiter.setCompanyName(request.getCompanyName());
@@ -60,8 +78,23 @@ public class RecruiterServiceImpl implements RecruiterService {
             recruiter.setDescription(request.getDescription());
 
         if (request.getLogo() != null && !request.getLogo().isEmpty()) {
-            String logoUrl = cloudinaryService.uploadImage(request.getLogo());
-            recruiter.setCompanyLogo(logoUrl);
+            try {
+                if (recruiter.getPublicId() != null) {
+                    cloudinary.uploader().destroy(
+                            recruiter.getPublicId(),
+                            ObjectUtils.asMap("invalidate", true)
+                    );
+                }
+
+                String uploadResult = cloudinaryService.uploadImage(request.getLogo());
+                String[] parts = uploadResult.split("\\|");
+
+                recruiter.setCompanyLogo(parts[0]);
+                recruiter.setPublicId(parts[1]);
+
+            } catch (Exception e) {
+                throw new JobException("Failed to upload company logo. Please try again.");
+            }
         }
 
         recruiterRepository.save(recruiter);
@@ -71,8 +104,15 @@ public class RecruiterServiceImpl implements RecruiterService {
                 .email(user.getEmail())
                 .role("JOB_RECRUITER")
                 .companyName(recruiter.getCompanyName())
+                .companyAddress(recruiter.getCompanyAddress())
+                .companyEmail(recruiter.getCompanyEmail())
+                .contactPerson(recruiter.getContactPerson())
+                .phoneNumber(recruiter.getPhoneNumber())
+                .panNumber(recruiter.getPanNumber())
                 .description(recruiter.getDescription())
                 .logoUrl(recruiter.getCompanyLogo())
+                .publicId(recruiter.getPublicId())
+                .companyWebsite(recruiter.getCompanyWebsite())
                 .approved(recruiter.isApproved())
                 .build();
     }
@@ -100,7 +140,25 @@ public class RecruiterServiceImpl implements RecruiterService {
                 .panNumber(recruiter.getPanNumber())
                 .description(recruiter.getDescription())
                 .logoUrl(recruiter.getCompanyLogo())
+                .publicId(recruiter.getPublicId())
                 .approved(recruiter.isApproved())
                 .build();
     }
+
+    @Override
+    public void deleteProfile(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Recruiter recruiter = recruiterRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Recruiter profile not found"));
+
+        if (recruiter.getPublicId() != null) {
+            cloudinaryService.deleteFile(recruiter.getPublicId());
+        }
+
+        recruiterRepository.delete(recruiter);
+    }
+
 }

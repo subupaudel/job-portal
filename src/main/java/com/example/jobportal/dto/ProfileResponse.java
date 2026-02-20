@@ -20,5 +20,6 @@ public class ProfileResponse {
     private String panNumber;
     private String description;
     private String logoUrl;
+    private String publicId;
     private boolean approved;
 }

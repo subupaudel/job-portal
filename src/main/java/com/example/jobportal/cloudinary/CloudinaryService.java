@@ -39,8 +39,10 @@ public class CloudinaryService {
                     )
             );
 
-            return uploadResult.get("secure_url").toString();
+            String url = uploadResult.get("secure_url").toString();
+            String publicId = uploadResult.get("public_id").toString();
 
+            return url + "|" + publicId;
         } catch (IOException e) {
             throw new JobException("Image upload failed");
         }
@@ -75,20 +77,17 @@ public class CloudinaryService {
         }
     }
 
-    /**
-     * Optional: Delete file by publicId
-     */
-    public void deleteFile(String publicUrl) {
+    public void deleteFile(String publicId) {
         try {
-            if (publicUrl == null || publicUrl.isEmpty()) return;
+            if (publicId == null || publicId.isEmpty()) return;
 
-            String[] parts = publicUrl.split("/");
-            String filename = parts[parts.length - 1];
-            String publicId = filename.substring(0, filename.lastIndexOf('.'));
-            cloudinary.uploader().destroy("recruiters/logos/" + publicId, ObjectUtils.emptyMap());
-
+            cloudinary.uploader().destroy(
+                    publicId,
+                    ObjectUtils.asMap("invalidate", true)
+            );
         } catch (Exception e) {
-            throw new RuntimeException("Failed to delete image", e);
+            throw new RuntimeException("Failed to delete file", e);
         }
     }
+
 }

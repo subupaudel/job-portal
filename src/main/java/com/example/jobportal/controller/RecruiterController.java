@@ -27,7 +27,7 @@ public class RecruiterController {
     private final RecruiterRepository recruiterRepository;
 
     @PostMapping(value = "/profile", consumes = "multipart/form-data")
-    public ProfileResponse updateProfile(
+    public ProfileResponse createProfile(
             @ModelAttribute RecruiterRequest request,
             @RequestHeader("Authorization") String authHeader) {
 
@@ -37,9 +37,9 @@ public class RecruiterController {
         return recruiterService.updateProfile(userId, request);
     }
 
-    @PutMapping("/profile")
+    @PutMapping(value = "/profile", consumes = "multipart/form-data")
     public ProfileResponse update(
-            @RequestBody RecruiterRequest request,
+            @ModelAttribute RecruiterRequest request,
             @RequestHeader("Authorization") String authHeader) {
 
         String token = jwtUtil.extractToken(authHeader);
@@ -56,6 +56,19 @@ public class RecruiterController {
 
         return recruiterService.getProfile(userId);
     }
+
+    @DeleteMapping("/profile")
+    public ResponseEntity<String> deleteProfile(
+            @RequestHeader("Authorization") String authHeader) {
+
+        String token = jwtUtil.extractToken(authHeader);
+        Long userId = jwtUtil.getUserIdFromToken(token);
+
+        recruiterService.deleteProfile(userId);
+
+        return ResponseEntity.ok("Recruiter profile deleted successfully");
+    }
+
 
     @PostMapping("/jobs")
     public ResponseEntity<JobResponse> createJob(
