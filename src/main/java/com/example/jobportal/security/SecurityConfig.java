@@ -35,6 +35,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/stripe/webhook").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/recruiter/**").hasAnyRole("JOB_RECRUITER", "ADMIN")
                         .requestMatchers("/jobseeker/**").hasAnyRole("JOB_SEEKER", "ADMIN")

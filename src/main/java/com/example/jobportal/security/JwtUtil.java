@@ -45,17 +45,24 @@ public class JwtUtil {
     }
 
     public Long getUserIdFromToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .get("userId", Long.class);
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .get("userId", Long.class);
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new RuntimeException("Invalid or expired JWT token", e);
+        }
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
+            Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
@@ -64,7 +71,7 @@ public class JwtUtil {
 
     public String extractToken(String authHeader) {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7);
+            return authHeader.substring(7).trim(); // <-- Trim spaces
         }
         throw new IllegalArgumentException("Invalid Authorization header");
     }

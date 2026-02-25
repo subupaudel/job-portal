@@ -4,12 +4,15 @@ import com.example.jobportal.dto.JobRequest;
 import com.example.jobportal.dto.JobResponse;
 import com.example.jobportal.entity.Job;
 import com.example.jobportal.entity.Recruiter;
+import com.example.jobportal.entity.RecruiterPlan;
 import com.example.jobportal.enums.JobStatus;
 import com.example.jobportal.repository.JobRepository;
+import com.example.jobportal.repository.RecruiterPlanRepository;
 import com.example.jobportal.repository.RecruiterRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,9 +22,19 @@ public class JobServiceImpl implements JobService {
 
     private final JobRepository jobRepository;
     private final RecruiterRepository recruiterRepository;
+    private final RecruiterPlanRepository recruiterPlanRepository;
 
     @Override
     public JobResponse createJob(Recruiter recruiter, JobRequest request) {
+
+        RecruiterPlan activePlan = recruiterPlanRepository
+                .findTopByRecruiterIdAndExpiryDateAfterOrderByExpiryDateDesc(recruiter.getId(), LocalDate.now())
+                .orElseThrow(() -> new RuntimeException("No active plan. Please purchase a package."));
+
+        if (activePlan.getJobsUsed() >= activePlan.getJobLimit()) {
+            throw new RuntimeException("Job posting limit reached. Upgrade your plan.");
+        }
+
         Job job = Job.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
@@ -32,6 +45,9 @@ public class JobServiceImpl implements JobService {
                 .build();
 
         Job savedJob = jobRepository.save(job);
+
+        activePlan.setJobsUsed(activePlan.getJobsUsed() + 1);
+        recruiterPlanRepository.save(activePlan);
 
         return mapToResponse(savedJob);
     }

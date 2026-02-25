@@ -14,12 +14,6 @@ public class JobExceptionHandler {
                 .body(new ErrorResponse(ex.getMessage()));
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Something went wrong. Please try again."));
-    }
-
     public static class ErrorResponse {
         private String message;
 
