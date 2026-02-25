@@ -44,6 +44,6 @@ public class RecruiterPlanService {
 
         recruiterPlanRepository.save(rp);
 
-        System.out.println("✅ Plan activated for recruiterId: " + recruiterId);
+        System.out.println("Plan activated for recruiterId: " + recruiterId);
     }
 }
