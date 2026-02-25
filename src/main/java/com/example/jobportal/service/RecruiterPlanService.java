@@ -27,23 +27,21 @@ public class RecruiterPlanService {
      * @param paymentIntent Stripe PaymentIntent ID
      */
     public void activatePlan(Long recruiterId, String planName, String paymentIntent) {
-        // Find the plan from DB
         Plan plan = planRepository.findByNameAndActiveTrue(planName)
                 .orElseThrow(() -> new RuntimeException("Plan not found"));
 
-        // Create a RecruiterPlan record
         RecruiterPlan rp = RecruiterPlan.builder()
                 .recruiterId(recruiterId)
-                .planType(PlanType.valueOf(plan.getName())) // make sure enum matches plan names
+                .planType(PlanType.valueOf(plan.getName()))
                 .startDate(LocalDate.now())
                 .expiryDate(LocalDate.now().plusDays(plan.getDurationDays()))
                 .jobLimit(plan.getJobLimit())
                 .jobsUsed(0)
                 .paymentStatus(PaymentStatus.SUCCESS)
-                .stripePaymentId(paymentIntent)  // store PaymentIntent ID
+                .stripePaymentId(paymentIntent)
                 .build();
 
-        // Save to DB
+
         recruiterPlanRepository.save(rp);
 
         System.out.println("✅ Plan activated for recruiterId: " + recruiterId);
