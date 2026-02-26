@@ -64,5 +64,5 @@ public class Recruiter {
     private String publicId;
 
     @Column(nullable = false)
-    private boolean approved = false;
+    private boolean approved = true;
 }

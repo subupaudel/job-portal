@@ -5,9 +5,11 @@ import com.example.jobportal.dto.JobResponse;
 import com.example.jobportal.dto.RecruiterRequest;
 import com.example.jobportal.dto.ProfileResponse;
 import com.example.jobportal.entity.Recruiter;
+import com.example.jobportal.entity.RecruiterPlan;
 import com.example.jobportal.repository.RecruiterRepository;
 import com.example.jobportal.security.JwtUtil;
 import com.example.jobportal.service.JobService;
+import com.example.jobportal.service.RecruiterPlanService;
 import com.example.jobportal.service.RecruiterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,8 @@ public class RecruiterController {
     private final JobService jobService;
     private final JwtUtil jwtUtil;
     private final RecruiterRepository recruiterRepository;
+    private final RecruiterPlanService recruiterPlanService;
+
 
     @PostMapping(value = "/profile", consumes = "multipart/form-data")
     public ProfileResponse createProfile(
@@ -124,5 +128,20 @@ public class RecruiterController {
 
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/subscription")
+    public ResponseEntity<RecruiterPlan> getMySubscription(
+            @RequestHeader("Authorization") String authHeader) {
+
+        String token = jwtUtil.extractToken(authHeader);
+        Long userId = jwtUtil.getUserIdFromToken(token);
+
+        Recruiter recruiter = recruiterRepository.getRecruiterByUserId(userId);
+
+        RecruiterPlan plan = recruiterPlanService.getCurrentPlan(recruiter.getId());
+
+        return ResponseEntity.ok(plan);
+    }
+
 
 }

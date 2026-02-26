@@ -4,6 +4,7 @@ import com.example.jobportal.entity.Plan;
 import com.example.jobportal.entity.RecruiterPlan;
 import com.example.jobportal.enums.PaymentStatus;
 import com.example.jobportal.enums.PlanType;
+import com.example.jobportal.exception.JobException;
 import com.example.jobportal.repository.PlanRepository;
 import com.example.jobportal.repository.RecruiterPlanRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,14 +19,7 @@ public class RecruiterPlanService {
     private final RecruiterPlanRepository recruiterPlanRepository;
     private final PlanRepository planRepository;
 
-    /**
-     * Activate a plan for a recruiter after successful payment.
-     *
-     * @param recruiterId   ID of the recruiter
-     * @param planName      Name of the plan (MONTHLY, etc.)
-     * @param sessionId     Stripe checkout session ID
-     * @param paymentIntent Stripe PaymentIntent ID
-     */
+
     public void activatePlan(Long recruiterId, String planName, String paymentIntent) {
         Plan plan = planRepository.findByNameAndActiveTrue(planName)
                 .orElseThrow(() -> new RuntimeException("Plan not found"));
@@ -45,5 +39,11 @@ public class RecruiterPlanService {
         recruiterPlanRepository.save(rp);
 
         System.out.println("Plan activated for recruiterId: " + recruiterId);
+    }
+
+    public RecruiterPlan getCurrentPlan(Long recruiterId) {
+        return (RecruiterPlan) recruiterPlanRepository
+                .findTopByRecruiterIdOrderByExpiryDateDesc(recruiterId)
+                .orElseThrow(() -> new JobException("No subscription found"));
     }
 }
