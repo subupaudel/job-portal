@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/seeker")
 @RequiredArgsConstructor
@@ -56,5 +57,14 @@ public class SeekerController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/jobs")
+    public ResponseEntity<List<JobResponse>> getAllJobs() {
+
+        List<JobResponse> jobs = jobService.getAllJobs();
+
+        return ResponseEntity.ok(jobs);
+    }
+
 
 }

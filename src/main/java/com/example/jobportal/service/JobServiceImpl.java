@@ -97,7 +97,7 @@ public class JobServiceImpl implements JobService {
                 .salary(job.getSalary())
                 .status(job.getStatus())
                 .recruiterId(job.getRecruiter().getId())
-                .recruiterName(recruiter.getCompanyName())
+                .recruiterName(job.getRecruiter().getCompanyName())
                 .build();
     }
     @Override
@@ -111,6 +111,25 @@ public class JobServiceImpl implements JobService {
         }
 
         jobRepository.delete(job);
+    }
+
+    @Override
+    public List<JobResponse> getAllJobs() {
+
+        List<Job> jobs = jobRepository.findAll();
+
+        return jobs.stream()
+                .map(job -> JobResponse.builder()
+                        .id(job.getId())
+                        .title(job.getTitle())
+                        .description(job.getDescription())
+                        .location(job.getLocation())
+                        .salary(job.getSalary())
+                        .status(job.getStatus())
+                        .recruiterId(job.getRecruiter().getId())
+                        .recruiterName(job.getRecruiter().getCompanyName())
+                        .build())
+                .toList();
     }
 
 }

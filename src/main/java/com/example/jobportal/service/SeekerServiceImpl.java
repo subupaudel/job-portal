@@ -54,7 +54,7 @@ public class SeekerServiceImpl implements SeekerService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Seeker seeker = seekerRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("Recruiter profile not found"));
+                .orElseThrow(() -> new RuntimeException("Seeker profile not found"));
 
         return SeekerResponse.builder()
                 .firstName(seeker.getFirstName())
