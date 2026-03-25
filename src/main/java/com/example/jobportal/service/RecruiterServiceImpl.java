@@ -32,7 +32,6 @@ public class RecruiterServiceImpl implements RecruiterService {
                 .orElse(
                         Recruiter.builder()
                                 .user(user)
-                                .approved(false)
                                 .build()
                 );
 
@@ -113,7 +112,6 @@ public class RecruiterServiceImpl implements RecruiterService {
                 .logoUrl(recruiter.getCompanyLogo())
                 .publicId(recruiter.getPublicId())
                 .companyWebsite(recruiter.getCompanyWebsite())
-                .approved(recruiter.isApproved())
                 .build();
     }
 
@@ -141,7 +139,6 @@ public class RecruiterServiceImpl implements RecruiterService {
                 .description(recruiter.getDescription())
                 .logoUrl(recruiter.getCompanyLogo())
                 .publicId(recruiter.getPublicId())
-                .approved(recruiter.isApproved())
                 .build();
     }
 
@@ -159,6 +156,25 @@ public class RecruiterServiceImpl implements RecruiterService {
         }
 
         recruiterRepository.delete(recruiter);
+    }
+
+    @Override
+    public ProfileResponse getRecruiterProfile(Long recruiterId) {
+
+        Recruiter recruiter = recruiterRepository.findById(recruiterId)
+                .orElseThrow(() -> new RuntimeException("Recruiter not found"));
+
+        return ProfileResponse.builder()
+                .companyName(recruiter.getCompanyName())
+                .companyEmail(recruiter.getCompanyEmail())
+                .contactPerson(recruiter.getContactPerson())
+                .phoneNumber(recruiter.getPhoneNumber())
+                .companyWebsite(recruiter.getCompanyWebsite())
+                .companyAddress(recruiter.getCompanyAddress())
+                .industryType(recruiter.getIndustryType())
+                .description(recruiter.getDescription())
+                .logoUrl(recruiter.getCompanyLogo())
+                .build();
     }
 
 }

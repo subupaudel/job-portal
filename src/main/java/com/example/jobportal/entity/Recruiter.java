@@ -64,5 +64,7 @@ public class Recruiter {
     private String publicId;
 
     @Column(nullable = false)
-    private boolean approved = true;
+    private int reportCount = 0;
+
+    private boolean blocked = false;
 }

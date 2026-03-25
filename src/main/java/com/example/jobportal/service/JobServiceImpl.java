@@ -27,6 +27,10 @@ public class JobServiceImpl implements JobService {
     @Override
     public JobResponse createJob(Recruiter recruiter, JobRequest request) {
 
+        if (recruiter.isBlocked()) {
+            throw new RuntimeException("You are blocked and cannot create jobs");
+        }
+
         RecruiterPlan activePlan = recruiterPlanRepository
                 .findTopByRecruiterIdAndExpiryDateAfterOrderByExpiryDateDesc(recruiter.getId(), LocalDate.now())
                 .orElseThrow(() -> new RuntimeException("No active plan. Please purchase a package."));

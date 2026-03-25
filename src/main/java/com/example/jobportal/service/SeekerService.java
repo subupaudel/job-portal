@@ -10,4 +10,5 @@ public interface SeekerService {
 
     SeekerResponse getProfile(Long userId);
 
+    void reportRecruiter(Long userId, Long recruiterId);
 }
