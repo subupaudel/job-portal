@@ -3,6 +3,7 @@ package com.example.jobportal.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -35,10 +36,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/stripe/webhook").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/seeker/**").hasAnyRole("JOB_SEEKER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/seeker/apply/**").hasAnyRole("JOB_SEEKER", "ADMIN") // ✅ ADD
                         .requestMatchers("/recruiter/**").hasAnyRole("JOB_RECRUITER", "ADMIN")
-                        .requestMatchers("/jobseeker/**").hasAnyRole("JOB_SEEKER", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -19,15 +19,19 @@ public class JobApplication {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Seeker (User)
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User seeker;
+    @JoinColumn(name = "seeker_id")
+    private Seeker seeker;
 
-    // Job
+    // ✅ Job
     @ManyToOne
     @JoinColumn(name = "job_id")
     private Job job;
+
+    // ✅ Recruiter (NEW)
+    @ManyToOne
+    @JoinColumn(name = "recruiter_id")
+    private Recruiter recruiter;
 
     // Resume info from Cloudinary
     private String resumeUrl;

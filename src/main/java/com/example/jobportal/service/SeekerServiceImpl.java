@@ -106,4 +106,10 @@ public class SeekerServiceImpl implements SeekerService {
             recruiterRepository.save(recruiter);
         }
     }
+
+    public Long getSeekerIdByUserId(Long userId) {
+        return seekerRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Seeker profile not found"))
+                .getId(); // seekerId
+    }
 }

@@ -15,25 +15,35 @@ public class JobApplicationService {
 
     private final JobApplicationRepository applicationRepository;
     private final JobRepository jobRepository;
-    private final UserRepository userRepository;
+    private final SeekerRepository seekerRepository;
 
     // Apply job
-    public void applyJob(Long userId, Long jobId, String resumeUrl, String publicId, String coverLetter) {
+    public void applyJob(Long userId,
+                         Long jobId,
+                         String resumeUrl,
+                         String publicId,
+                         String coverLetter) {
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        // ✅ Get seeker
+        Seeker seeker = seekerRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Seeker profile not found"));
 
+        // ✅ Get job
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
-        // Prevent duplicate applications
-        if (applicationRepository.existsByJobAndSeeker(job, user)) {
-            throw new RuntimeException("Already applied for this job");
+        // ✅ Get recruiter from job
+        Recruiter recruiter = job.getRecruiter();
+
+        // ❌ Prevent duplicate
+        if (applicationRepository.existsByJobAndSeeker(job, seeker)) {
+            throw new RuntimeException("Already applied");
         }
 
         JobApplication application = JobApplication.builder()
-                .seeker(user)
+                .seeker(seeker)
                 .job(job)
+                .recruiter(recruiter) // ✅ NEW
                 .resumeUrl(resumeUrl)
                 .resumePublicId(publicId)
                 .coverLetter(coverLetter)
@@ -52,9 +62,9 @@ public class JobApplicationService {
     }
 
     // View all applications by a seeker
-    public List<JobApplication> getApplicationsBySeeker(Long userId) {
-        User user = userRepository.findById(userId)
+    public List<JobApplication> getApplicationsBySeeker(Long seekerId) {
+        Seeker seeker = seekerRepository.findById(seekerId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return applicationRepository.findBySeeker(user);
+        return applicationRepository.findBySeeker(seeker);
     }
 }
