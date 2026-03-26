@@ -66,11 +66,14 @@ public class CloudinaryService {
                     pdfFile.getBytes(),
                     ObjectUtils.asMap(
                             "folder", "seekers/resumes",
-                            "resource_type", "auto"
+                            "resource_type", "raw"   //
                     )
             );
 
-            return uploadResult.get("secure_url").toString();
+            String url = uploadResult.get("secure_url").toString();
+            String publicId = uploadResult.get("public_id").toString();
+
+            return url + "|" + publicId; // consistent with image method
 
         } catch (IOException e) {
             throw new JobException("PDF upload failed");

@@ -1,5 +1,6 @@
 package com.example.jobportal.controller;
 
+import com.example.jobportal.cloudinary.CloudinaryService;
 import com.example.jobportal.dto.JobResponse;
 import com.example.jobportal.dto.ProfileResponse;
 import com.example.jobportal.dto.SeekerRequest;
@@ -11,6 +12,7 @@ import com.example.jobportal.service.SeekerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -23,6 +25,7 @@ public class SeekerController {
     private final SeekerService seekerService;
     private final JobService jobService;
     private final RecruiterService  recruiterService;
+    private final CloudinaryService cloudinaryService;
 
     @PostMapping("/profile")
     public ResponseEntity<SeekerResponse> update(
@@ -82,5 +85,4 @@ public class SeekerController {
 
         return ResponseEntity.ok("Recruiter reported successfully");
     }
-
 }
