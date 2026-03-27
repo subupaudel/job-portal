@@ -6,6 +6,7 @@ import com.example.jobportal.dto.SeekerRequest;
 import com.example.jobportal.dto.SeekerResponse;
 import com.example.jobportal.security.JwtUtil;
 import com.example.jobportal.service.JobApplicationService;
+import com.example.jobportal.service.JobService;
 import com.example.jobportal.service.RecruiterService;
 import com.example.jobportal.service.SeekerService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class SeekerController {
     private final JwtUtil jwtUtil;
     private final SeekerService seekerService;
     private final RecruiterService recruiterService;
+    private final JobService jobService;
 
     // ✅ NEW
     private final CloudinaryService cloudinaryService;
@@ -118,5 +120,29 @@ public class SeekerController {
         seekerService.reportRecruiter(userId, recruiterId);
 
         return ResponseEntity.ok("Recruiter reported successfully");
+    }
+
+    // ---------------- RECOMMENDED JOBS ----------------
+    @GetMapping("/recommended-jobs")
+    public ResponseEntity<?> getRecommendedJobs(
+            @RequestHeader("Authorization") String authHeader) {
+
+        Long userId = jwtUtil.getUserIdFromToken(jwtUtil.extractToken(authHeader));
+
+        var jobs = jobApplicationService.getRecommendedJobs(userId);
+
+        return ResponseEntity.ok(jobs);
+    }
+
+    // ---------------- SEARCH JOBS ----------------
+    @GetMapping("/search")
+    public ResponseEntity<?> searchJobs(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) Double minSalary) {
+
+        var jobs = jobService.searchJobs(keyword, location, minSalary);
+
+        return ResponseEntity.ok(jobs);
     }
 }

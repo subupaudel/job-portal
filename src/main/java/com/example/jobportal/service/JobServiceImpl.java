@@ -117,4 +117,38 @@ public class JobServiceImpl implements JobService {
         jobRepository.delete(job);
     }
 
+    @Override
+    public List<JobResponse> searchJobs(String keyword, String location, Double minSalary) {
+
+        List<Job> jobs = jobRepository.findAll();
+
+        return jobs.stream()
+                .filter(job -> matchesKeyword(job, keyword))
+                .filter(job -> matchesLocation(job, location))
+                .filter(job -> matchesSalary(job, minSalary))
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    private boolean matchesKeyword(Job job, String keyword) {
+        if (keyword == null || keyword.isEmpty()) return true;
+
+        String lowerKeyword = keyword.toLowerCase();
+
+        return job.getTitle().toLowerCase().contains(lowerKeyword) ||
+                job.getDescription().toLowerCase().contains(lowerKeyword);
+    }
+
+    private boolean matchesLocation(Job job, String location) {
+        if (location == null || location.isEmpty()) return true;
+
+        return job.getLocation().toLowerCase()
+                .contains(location.toLowerCase());
+    }
+
+    private boolean matchesSalary(Job job, Double minSalary) {
+        if (minSalary == null) return true;
+
+        return job.getSalary().doubleValue() >= minSalary;
+    }
 }
