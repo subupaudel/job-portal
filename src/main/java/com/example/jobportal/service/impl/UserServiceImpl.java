@@ -1,20 +1,17 @@
-package com.example.jobportal.service;
+package com.example.jobportal.service.impl;
 
-import com.example.jobportal.dto.LoginRequest;
-import com.example.jobportal.dto.LoginResponse;
-import com.example.jobportal.dto.RegisterRequest;
+import com.example.jobportal.dto.*;
 import com.example.jobportal.entity.User;
 import com.example.jobportal.exception.JobException;
 import com.example.jobportal.repository.UserRepository;
 import com.example.jobportal.security.JwtUtil;
+import com.example.jobportal.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.example.jobportal.dto.Response;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
 
 @Service
 @RequiredArgsConstructor
@@ -26,8 +23,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Response registerUser(RegisterRequest request) {
+
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new JobException("User already exists with this email.");
+            throw new JobException("User already exists");
         }
 
         User user = User.builder()
@@ -45,15 +43,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public LoginResponse loginUser(LoginRequest request) {
+
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new JobException("Invalid email or password"));
+                .orElseThrow(() -> new JobException("Invalid credentials"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new JobException("Invalid email or password");
+            throw new JobException("Invalid credentials");
         }
 
         String token = jwtUtil.generateToken(user.getId(), user.getEmail());
-
 
         return LoginResponse.builder()
                 .token(token)

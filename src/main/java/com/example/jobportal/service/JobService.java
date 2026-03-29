@@ -14,5 +14,5 @@ public interface JobService {
 
     void deleteJob(Long jobId, Long userId);
 
-    List<JobResponse> getAllJobs();
+    Object searchJobs(String keyword, String location, Double minSalary);
 }

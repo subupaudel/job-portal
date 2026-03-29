@@ -21,5 +21,6 @@ public class ProfileResponse {
     private String description;
     private String logoUrl;
     private String publicId;
+    private int reportCount;
     private boolean approved;
 }

@@ -31,6 +31,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @OneToOne
+    private ForgotPassword forgotPassword;
+
     @Column(name="created_at", updatable = false)
     private LocalDateTime createdAt;
 

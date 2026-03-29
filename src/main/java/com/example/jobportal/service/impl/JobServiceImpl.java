@@ -1,4 +1,4 @@
-package com.example.jobportal.service;
+package com.example.jobportal.service.impl;
 
 import com.example.jobportal.dto.JobRequest;
 import com.example.jobportal.dto.JobResponse;
@@ -9,12 +9,12 @@ import com.example.jobportal.enums.JobStatus;
 import com.example.jobportal.repository.JobRepository;
 import com.example.jobportal.repository.RecruiterPlanRepository;
 import com.example.jobportal.repository.RecruiterRepository;
+import com.example.jobportal.service.JobService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,12 +27,17 @@ public class JobServiceImpl implements JobService {
     @Override
     public JobResponse createJob(Recruiter recruiter, JobRequest request) {
 
-        RecruiterPlan activePlan = recruiterPlanRepository
-                .findTopByRecruiterIdAndExpiryDateAfterOrderByExpiryDateDesc(recruiter.getId(), LocalDate.now())
-                .orElseThrow(() -> new RuntimeException("No active plan. Please purchase a package."));
+        if (recruiter.isBlocked()) {
+            throw new RuntimeException("You are blocked");
+        }
 
-        if (activePlan.getJobsUsed() >= activePlan.getJobLimit()) {
-            throw new RuntimeException("Job posting limit reached. Upgrade your plan.");
+        RecruiterPlan plan = recruiterPlanRepository
+                .findTopByRecruiterIdAndExpiryDateAfterOrderByExpiryDateDesc(
+                        recruiter.getId(), LocalDate.now())
+                .orElseThrow(() -> new RuntimeException("No active plan"));
+
+        if (plan.getJobsUsed() >= plan.getJobLimit()) {
+            throw new RuntimeException("Job limit reached");
         }
 
         Job job = Job.builder()
@@ -44,12 +49,12 @@ public class JobServiceImpl implements JobService {
                 .recruiter(recruiter)
                 .build();
 
-        Job savedJob = jobRepository.save(job);
+        Job saved = jobRepository.save(job);
 
-        activePlan.setJobsUsed(activePlan.getJobsUsed() + 1);
-        recruiterPlanRepository.save(activePlan);
+        plan.setJobsUsed(plan.getJobsUsed() + 1);
+        recruiterPlanRepository.save(plan);
 
-        return mapToResponse(savedJob);
+        return mapToResponse(saved);
     }
 
     @Override
@@ -57,7 +62,7 @@ public class JobServiceImpl implements JobService {
         return jobRepository.findByRecruiter(recruiter)
                 .stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -67,7 +72,7 @@ public class JobServiceImpl implements JobService {
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
         if (!job.getRecruiter().getUser().getId().equals(userId)) {
-            throw new RuntimeException("You are not allowed to update this job");
+            throw new RuntimeException("Unauthorized");
         }
 
         job.setTitle(request.getTitle());
@@ -79,16 +84,35 @@ public class JobServiceImpl implements JobService {
             job.setStatus(request.getStatus());
         }
 
-        Job updatedJob = jobRepository.save(job);
-        return mapToResponse(updatedJob);
+        return mapToResponse(jobRepository.save(job));
+    }
+
+    @Override
+    public void deleteJob(Long jobId, Long userId) {
+
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        if (!job.getRecruiter().getUser().getId().equals(userId)) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        jobRepository.delete(job);
+    }
+
+    @Override
+    public List<JobResponse> searchJobs(String keyword, String location, Double minSalary) {
+
+        return jobRepository.findAll().stream()
+                .filter(j -> keyword == null || j.getTitle().toLowerCase().contains(keyword.toLowerCase())
+                        || j.getDescription().toLowerCase().contains(keyword.toLowerCase()))
+                .filter(j -> location == null || j.getLocation().toLowerCase().contains(location.toLowerCase()))
+                .filter(j -> minSalary == null || j.getSalary().doubleValue() >= minSalary)
+                .map(this::mapToResponse)
+                .toList();
     }
 
     private JobResponse mapToResponse(Job job) {
-
-        Long recruiterId = job.getRecruiter().getId();
-        Recruiter recruiter = recruiterRepository.findByUserId(recruiterId)
-                .orElseThrow(() -> new RuntimeException("Recruiter profile not found"));
-
         return JobResponse.builder()
                 .id(job.getId())
                 .title(job.getTitle())
@@ -100,36 +124,4 @@ public class JobServiceImpl implements JobService {
                 .recruiterName(job.getRecruiter().getCompanyName())
                 .build();
     }
-    @Override
-    public void deleteJob(Long jobId, Long userId) {
-
-        Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
-
-        if (!job.getRecruiter().getUser().getId().equals(userId)) {
-            throw new RuntimeException("You are not allowed to delete this job");
-        }
-
-        jobRepository.delete(job);
-    }
-
-    @Override
-    public List<JobResponse> getAllJobs() {
-
-        List<Job> jobs = jobRepository.findAll();
-
-        return jobs.stream()
-                .map(job -> JobResponse.builder()
-                        .id(job.getId())
-                        .title(job.getTitle())
-                        .description(job.getDescription())
-                        .location(job.getLocation())
-                        .salary(job.getSalary())
-                        .status(job.getStatus())
-                        .recruiterId(job.getRecruiter().getId())
-                        .recruiterName(job.getRecruiter().getCompanyName())
-                        .build())
-                .toList();
-    }
-
 }

@@ -10,4 +10,5 @@ public interface RecruiterService {
 
     void deleteProfile(Long userId);
 
+    ProfileResponse getRecruiterProfile(Long recruiterId);
 }
