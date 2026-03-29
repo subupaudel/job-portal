@@ -6,6 +6,7 @@ import com.example.jobportal.entity.Job;
 import com.example.jobportal.entity.Recruiter;
 import com.example.jobportal.entity.RecruiterPlan;
 import com.example.jobportal.enums.JobStatus;
+import com.example.jobportal.exception.JobException;
 import com.example.jobportal.repository.JobRepository;
 import com.example.jobportal.repository.RecruiterPlanRepository;
 import com.example.jobportal.repository.RecruiterRepository;
@@ -21,23 +22,22 @@ import java.util.List;
 public class JobServiceImpl implements JobService {
 
     private final JobRepository jobRepository;
-    private final RecruiterRepository recruiterRepository;
     private final RecruiterPlanRepository recruiterPlanRepository;
 
     @Override
     public JobResponse createJob(Recruiter recruiter, JobRequest request) {
 
         if (recruiter.isBlocked()) {
-            throw new RuntimeException("You are blocked");
+            throw JobException.unauthorized("You are blocked and cannot create jobs");
         }
 
         RecruiterPlan plan = recruiterPlanRepository
                 .findTopByRecruiterIdAndExpiryDateAfterOrderByExpiryDateDesc(
                         recruiter.getId(), LocalDate.now())
-                .orElseThrow(() -> new RuntimeException("No active plan"));
+                .orElseThrow(() -> JobException.notFound("No active subscription plan found"));
 
         if (plan.getJobsUsed() >= plan.getJobLimit()) {
-            throw new RuntimeException("Job limit reached");
+            throw JobException.badRequest("You have reached your job posting limit");
         }
 
         Job job = Job.builder()
@@ -69,10 +69,10 @@ public class JobServiceImpl implements JobService {
     public JobResponse updateJob(Long jobId, Long userId, JobRequest request) {
 
         Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
+                .orElseThrow(() -> JobException.notFound("Job not found"));
 
         if (!job.getRecruiter().getUser().getId().equals(userId)) {
-            throw new RuntimeException("Unauthorized");
+            throw JobException.unauthorized("You are not allowed to update this job");
         }
 
         job.setTitle(request.getTitle());
@@ -91,10 +91,10 @@ public class JobServiceImpl implements JobService {
     public void deleteJob(Long jobId, Long userId) {
 
         Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
+                .orElseThrow(() -> JobException.notFound("Job not found"));
 
         if (!job.getRecruiter().getUser().getId().equals(userId)) {
-            throw new RuntimeException("Unauthorized");
+            throw JobException.unauthorized("You are not allowed to delete this job");
         }
 
         jobRepository.delete(job);
@@ -104,8 +104,9 @@ public class JobServiceImpl implements JobService {
     public List<JobResponse> searchJobs(String keyword, String location, Double minSalary) {
 
         return jobRepository.findAll().stream()
-                .filter(j -> keyword == null || j.getTitle().toLowerCase().contains(keyword.toLowerCase())
-                        || j.getDescription().toLowerCase().contains(keyword.toLowerCase()))
+                .filter(j -> keyword == null ||
+                        j.getTitle().toLowerCase().contains(keyword.toLowerCase()) ||
+                        j.getDescription().toLowerCase().contains(keyword.toLowerCase()))
                 .filter(j -> location == null || j.getLocation().toLowerCase().contains(location.toLowerCase()))
                 .filter(j -> minSalary == null || j.getSalary().doubleValue() >= minSalary)
                 .map(this::mapToResponse)

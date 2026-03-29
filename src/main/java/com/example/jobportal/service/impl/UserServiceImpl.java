@@ -7,6 +7,7 @@ import com.example.jobportal.repository.UserRepository;
 import com.example.jobportal.security.JwtUtil;
 import com.example.jobportal.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,7 @@ public class UserServiceImpl implements UserService {
     public Response registerUser(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new JobException("User already exists");
+            throw JobException.badRequest("User already exists");
         }
 
         User user = User.builder()
@@ -45,10 +46,10 @@ public class UserServiceImpl implements UserService {
     public LoginResponse loginUser(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new JobException("Invalid credentials"));
+                .orElseThrow(() -> JobException.unauthorized("Invalid credentials"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new JobException("Invalid credentials");
+            throw JobException.unauthorized("Invalid credentials");
         }
 
         String token = jwtUtil.generateToken(user.getId(), user.getEmail());
@@ -63,6 +64,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getAllUsers() {
-        return userRepository.findAll();
+        List<User> users = userRepository.findAll();
+
+        if (users.isEmpty()) {
+            throw JobException.notFound("No users found");
+        }
+
+        return users;
     }
 }

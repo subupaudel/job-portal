@@ -3,6 +3,7 @@ package com.example.jobportal.service.impl;
 import com.example.jobportal.dto.JobResponse;
 import com.example.jobportal.entity.*;
 import com.example.jobportal.enums.ApplicationStatus;
+import com.example.jobportal.exception.JobException;
 import com.example.jobportal.repository.*;
 import com.example.jobportal.service.JobApplicationService;
 import lombok.RequiredArgsConstructor;
@@ -25,15 +26,15 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     public void applyJob(Long userId, Long jobId, String resumeUrl, String publicId, String coverLetter) {
 
         Seeker seeker = seekerRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Seeker profile not found"));
+                .orElseThrow(() -> JobException.notFound("Seeker profile not found"));
 
         Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
+                .orElseThrow(() -> JobException.notFound("Job not found"));
 
         Recruiter recruiter = job.getRecruiter();
 
         if (applicationRepository.existsByJobAndSeeker(job, seeker)) {
-            throw new RuntimeException("Already applied");
+            throw JobException.badRequest("You have already applied for this job");
         }
 
         JobApplication application = JobApplication.builder()
@@ -54,7 +55,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     @Override
     public List<JobApplication> getApplicationsForJob(Long jobId) {
         Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
+                .orElseThrow(() -> JobException.notFound("Job not found"));
         return applicationRepository.findByJob(job);
     }
 
@@ -62,7 +63,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     @Override
     public List<JobApplication> getApplicationsBySeeker(Long seekerId) {
         Seeker seeker = seekerRepository.findById(seekerId)
-                .orElseThrow(() -> new RuntimeException("Seeker not found"));
+                .orElseThrow(() -> JobException.notFound("Seeker not found"));
         return applicationRepository.findBySeeker(seeker);
     }
 
@@ -71,7 +72,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     public List<JobResponse> getRecommendedJobs(Long userId) {
 
         Seeker seeker = seekerRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Seeker not found"));
+                .orElseThrow(() -> JobException.notFound("Seeker not found"));
 
         String skills = seeker.getSkills();
         String qualification = seeker.getQualification().name();
@@ -94,8 +95,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
         String description = job.getDescription().toLowerCase();
 
         for (String skill : skills) {
-            if (title.contains(skill.toLowerCase()) ||
-                    description.contains(skill.toLowerCase())) {
+            if (title.contains(skill.toLowerCase()) || description.contains(skill.toLowerCase())) {
                 return true;
             }
         }
