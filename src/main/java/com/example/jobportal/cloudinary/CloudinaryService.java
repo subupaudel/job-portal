@@ -1,6 +1,5 @@
 package com.example.jobportal.cloudinary;
 
-
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.example.jobportal.exception.JobException;
@@ -17,80 +16,73 @@ public class CloudinaryService {
 
     private final Cloudinary cloudinary;
 
-    /**
-     * Uploads a file to Cloudinary and returns the secure URL
-     */
-    public String uploadImage(MultipartFile imageFile) {
+    // ---------------- UPLOAD IMAGE ----------------
+    public String uploadImage(MultipartFile file) {
+        validateFile(file, "image");
+
         try {
-            if (imageFile == null || imageFile.isEmpty()) {
-                throw new RuntimeException("Image file is empty");
-            }
-
-            String contentType = imageFile.getContentType();
-            if (contentType == null || !contentType.startsWith("image")) {
-                throw new JobException("Only image files are allowed");
-            }
-
             Map uploadResult = cloudinary.uploader().upload(
-                    imageFile.getBytes(),
+                    file.getBytes(),
                     ObjectUtils.asMap(
                             "folder", "recruiters/logos",
                             "resource_type", "image"
                     )
             );
-
-            String url = uploadResult.get("secure_url").toString();
-            String publicId = uploadResult.get("public_id").toString();
-
-            return url + "|" + publicId;
+            return buildResult(uploadResult);
         } catch (IOException e) {
-            throw new JobException("Image upload failed");
+            throw JobException.badRequest("Image upload failed");
         }
     }
 
-    /**
-     * Upload a PDF (resume) to Cloudinary
-     */
-    public String uploadPDF(MultipartFile pdfFile) {
+    // ---------------- UPLOAD PDF ----------------
+    public String uploadPDF(MultipartFile file) {
+        validateFile(file, "pdf");
+
         try {
-            if (pdfFile == null || pdfFile.isEmpty()) {
-                throw new RuntimeException("PDF file is empty");
-            }
-
-            String contentType = pdfFile.getContentType();
-            if (!"application/pdf".equals(contentType)) {
-                throw new RuntimeException("Only PDF files are allowed");
-            }
-
             Map uploadResult = cloudinary.uploader().upload(
-                    pdfFile.getBytes(),
+                    file.getBytes(),
                     ObjectUtils.asMap(
                             "folder", "seekers/resumes",
-                            "resource_type", "raw"   //
+                            "resource_type", "raw"
                     )
             );
-
-            String url = uploadResult.get("secure_url").toString();
-            String publicId = uploadResult.get("public_id").toString();
-
-            return url + "|" + publicId; // consistent with image method
-
+            return buildResult(uploadResult);
         } catch (IOException e) {
-            throw new JobException("PDF upload failed");
+            throw JobException.badRequest("PDF upload failed");
         }
     }
 
+    // ---------------- DELETE FILE ----------------
     public void deleteFile(String publicId) {
-        try {
-            if (publicId == null || publicId.isEmpty()) return;
+        if (publicId == null || publicId.isEmpty()) return;
 
-            cloudinary.uploader().destroy(
-                    publicId,
-                    ObjectUtils.asMap("invalidate", true)
-            );
+        try {
+            cloudinary.uploader().destroy(publicId, ObjectUtils.asMap("invalidate", true));
         } catch (Exception e) {
-            throw new RuntimeException("Failed to delete file", e);
+            throw JobException.badRequest("Failed to delete file");
         }
     }
 
+    // ---------------- VALIDATION ----------------
+    private void validateFile(MultipartFile file, String type) {
+        if (file == null || file.isEmpty()) {
+            throw type.equals("image") ?
+                    JobException.badRequest("Image file is empty") :
+                    JobException.badRequest("PDF file is empty");
+        }
+
+        String contentType = file.getContentType();
+        if ("image".equals(type) && (contentType == null || !contentType.startsWith("image"))) {
+            throw JobException.badRequest("Only image files are allowed");
+        } else if ("pdf".equals(type) && !"application/pdf".equals(contentType)) {
+            throw JobException.badRequest("Only PDF files are allowed");
+        }
+    }
+
+    // ---------------- HELPER ----------------
+    private String buildResult(Map uploadResult) {
+        String url = uploadResult.get("secure_url").toString();
+        String publicId = uploadResult.get("public_id").toString();
+        return url + "|" + publicId;
+    }
 }
