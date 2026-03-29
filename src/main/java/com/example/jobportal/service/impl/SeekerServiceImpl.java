@@ -6,12 +6,14 @@ import com.example.jobportal.entity.Recruiter;
 import com.example.jobportal.entity.Report;
 import com.example.jobportal.entity.Seeker;
 import com.example.jobportal.entity.User;
+import com.example.jobportal.exception.JobException;
 import com.example.jobportal.repository.RecruiterRepository;
 import com.example.jobportal.repository.ReportRepository;
 import com.example.jobportal.repository.SeekerRepository;
 import com.example.jobportal.repository.UserRepository;
 import com.example.jobportal.service.SeekerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,19 +23,17 @@ public class SeekerServiceImpl implements SeekerService {
     private final SeekerRepository seekerRepository;
     private final UserRepository userRepository;
     private final RecruiterRepository recruiterRepository;
-    private final ReportRepository  reportRepository;
+    private final ReportRepository reportRepository;
 
     @Override
     public SeekerResponse createProfile(Long userId, SeekerRequest seekerRequest) {
-
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> JobException.notFound("User not found"));
 
         Seeker seeker = seekerRepository.findByUserId(userId)
                 .orElseGet(() -> Seeker.builder()
                         .user(userRepository.getReferenceById(userId))
                         .build());
-
 
         seeker.setFirstName(seekerRequest.getFirstName());
         seeker.setLastName(seekerRequest.getLastName());
@@ -58,10 +58,10 @@ public class SeekerServiceImpl implements SeekerService {
     @Override
     public SeekerResponse getProfile(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> JobException.notFound("User not found"));
 
         Seeker seeker = seekerRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("Recruiter profile not found"));
+                .orElseThrow(() -> JobException.notFound("Seeker profile not found"));
 
         return SeekerResponse.builder()
                 .firstName(seeker.getFirstName())
@@ -76,35 +76,26 @@ public class SeekerServiceImpl implements SeekerService {
 
     @Override
     public void reportRecruiter(Long userId, Long recruiterId) {
-
         Seeker seeker = seekerRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Seeker not found"));
+                .orElseThrow(() -> JobException.notFound("Seeker not found"));
 
         Recruiter recruiter = recruiterRepository.findById(recruiterId)
-                .orElseThrow(() -> new RuntimeException("Recruiter not found"));
+                .orElseThrow(() -> JobException.notFound("Recruiter not found"));
 
-        // Prevent duplicate report
         if (reportRepository.existsBySeeker_IdAndRecruiter_Id(seeker.getId(), recruiterId)) {
-            throw new RuntimeException("Already reported");
+            throw JobException.badRequest("You have already reported this recruiter");
         }
 
-        // Save report
         Report report = Report.builder()
                 .seeker(seeker)
                 .recruiter(recruiter)
                 .build();
-
         reportRepository.save(report);
 
-        // Count total reports
         int totalReports = reportRepository.countByRecruiter_Id(recruiterId);
-
-        // 6️⃣ Update recruiter reportCount column
         recruiter.setReportCount(totalReports);
 
-        // 🔥 Block recruiter if threshold reached
         int REPORT_THRESHOLD = 20;
-
         if (totalReports >= REPORT_THRESHOLD && !recruiter.isBlocked()) {
             recruiter.setBlocked(true);
         }
@@ -113,7 +104,7 @@ public class SeekerServiceImpl implements SeekerService {
 
     public Long getSeekerIdByUserId(Long userId) {
         return seekerRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Seeker profile not found"))
-                .getId(); // seekerId
+                .orElseThrow(() -> JobException.notFound("Seeker profile not found"))
+                .getId();
     }
 }
