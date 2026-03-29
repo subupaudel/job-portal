@@ -1,4 +1,4 @@
-package com.example.jobportal.service;
+package com.example.jobportal.service.impl;
 
 import com.example.jobportal.dto.SeekerRequest;
 import com.example.jobportal.dto.SeekerResponse;
@@ -10,6 +10,7 @@ import com.example.jobportal.repository.RecruiterRepository;
 import com.example.jobportal.repository.ReportRepository;
 import com.example.jobportal.repository.SeekerRepository;
 import com.example.jobportal.repository.UserRepository;
+import com.example.jobportal.service.SeekerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

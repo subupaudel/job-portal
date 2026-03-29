@@ -9,5 +9,4 @@ import java.util.Optional;
 public interface RecruiterPlanRepository extends JpaRepository<RecruiterPlan, Long> {
     Optional<RecruiterPlan> findTopByRecruiterIdAndExpiryDateAfterOrderByExpiryDateDesc(Long recruiterId, LocalDate date);
 
-    Optional<Object> findTopByRecruiterIdOrderByExpiryDateDesc(Long recruiterId);
-}
+    Optional<RecruiterPlan> findTopByRecruiterIdOrderByExpiryDateDesc(Long recruiterId);}

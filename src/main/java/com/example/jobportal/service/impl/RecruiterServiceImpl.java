@@ -1,4 +1,4 @@
-package com.example.jobportal.service;
+package com.example.jobportal.service.impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
@@ -10,6 +10,7 @@ import com.example.jobportal.entity.User;
 import com.example.jobportal.exception.JobException;
 import com.example.jobportal.repository.RecruiterRepository;
 import com.example.jobportal.repository.UserRepository;
+import com.example.jobportal.service.RecruiterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
