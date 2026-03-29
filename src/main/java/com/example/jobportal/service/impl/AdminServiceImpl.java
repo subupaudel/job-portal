@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -54,18 +55,16 @@ public class AdminServiceImpl implements AdminService {
 
     // ---------------- GET REPORTED RECRUITERS ----------------
     @Override
-    public List<ProfileResponse> getReportedRecruiters() {
-
-        List<Recruiter> recruiters =
-                recruiterRepository.findByReportCountGreaterThanOrderByReportCountDesc(0);
+    public List<ProfileResponse> getReportedRecruiters(int threshold) {
+        List<Recruiter> recruiters = recruiterRepository.findByReportCountGreaterThan(threshold);
 
         return recruiters.stream()
-                .map(this::mapToProfileResponse)
-                .toList();
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     // ---------------- MAPPER ----------------
-    private ProfileResponse mapToProfileResponse(Recruiter recruiter) {
+    private ProfileResponse mapToResponse(Recruiter recruiter) {
 
         return ProfileResponse.builder()
                 .userId(recruiter.getUser().getId())
@@ -82,6 +81,7 @@ public class AdminServiceImpl implements AdminService {
                 .description(recruiter.getDescription())
                 .logoUrl(recruiter.getCompanyLogo())
                 .publicId(recruiter.getPublicId())
+                .reportCount(recruiter.getReportCount())
                 .build();
     }
 }

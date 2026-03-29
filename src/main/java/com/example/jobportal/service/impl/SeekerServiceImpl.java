@@ -99,13 +99,16 @@ public class SeekerServiceImpl implements SeekerService {
         // Count total reports
         int totalReports = reportRepository.countByRecruiter_Id(recruiterId);
 
+        // 6️⃣ Update recruiter reportCount column
+        recruiter.setReportCount(totalReports);
+
         // 🔥 Block recruiter if threshold reached
         int REPORT_THRESHOLD = 20;
 
         if (totalReports >= REPORT_THRESHOLD && !recruiter.isBlocked()) {
             recruiter.setBlocked(true);
-            recruiterRepository.save(recruiter);
         }
+        recruiterRepository.save(recruiter);
     }
 
     public Long getSeekerIdByUserId(Long userId) {

@@ -1,10 +1,13 @@
 package com.example.jobportal.controller;
 
+import com.example.jobportal.dto.ProfileResponse;
 import com.example.jobportal.security.JwtUtil;
 import com.example.jobportal.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/admin")
@@ -43,4 +46,12 @@ public class AdminController {
 
         return ResponseEntity.ok("Recruiter deleted successfully");
     }
+
+    @GetMapping("/recruiters/reported")
+    public ResponseEntity<List<ProfileResponse>> getReportedRecruiters(
+            @RequestParam(defaultValue = "20") int minReports) {
+        List<ProfileResponse> recruiters = adminService.getReportedRecruiters(minReports);
+        return ResponseEntity.ok(recruiters);
+    }
+
 }

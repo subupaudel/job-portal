@@ -1,5 +1,6 @@
 package com.example.jobportal.repository;
 
+import com.example.jobportal.dto.ProfileResponse;
 import com.example.jobportal.entity.Recruiter;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -14,5 +15,5 @@ public interface RecruiterRepository extends JpaRepository<Recruiter, Long> {
 
     boolean existsByCompanyEmailAndUserIdNot(String companyEmail, Long userId);
 
-    List<Recruiter> findByReportCountGreaterThanOrderByReportCountDesc(int i);
+    List<Recruiter> findByReportCountGreaterThan(int threshold);
 }
