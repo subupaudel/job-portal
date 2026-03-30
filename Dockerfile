@@ -1,23 +1,13 @@
-FROM openjdk:17-jdk-slim
-
+# Build stage
+FROM gradle:8.5-jdk17 AS build
 WORKDIR /app
-
-# Copy only required files first (faster + stable)
-COPY gradlew .
-COPY gradle gradle
-COPY build.gradle .
-COPY settings.gradle .
-
-RUN chmod +x gradlew
-
-# Download dependencies first (important)
-RUN ./gradlew dependencies
-
-# Now copy full project
 COPY . .
+RUN gradle build -x test
 
-# Build project
-RUN ./gradlew build -x test
+# Run stage
+FROM eclipse-temurin:17-jdk
+WORKDIR /app
+COPY --from=build /app/build/libs/*.jar app.jar
 
-# Run app
-CMD ["sh", "-c", "java -jar build/libs/*.jar"]
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
