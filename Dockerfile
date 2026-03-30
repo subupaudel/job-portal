@@ -1,20 +1,23 @@
-# Use Java 17 (recommended for Spring Boot)
 FROM openjdk:17-jdk-slim
 
-# Set working directory
 WORKDIR /app
 
-# Copy all files
+# Copy only required files first (faster + stable)
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle .
+COPY settings.gradle .
+
+RUN chmod +x gradlew
+
+# Download dependencies first (important)
+RUN ./gradlew dependencies
+
+# Now copy full project
 COPY . .
 
-# Give permission to gradlew
-RUN chmod +x ./gradlew
-
-# Build the project (skip tests for faster deploy)
+# Build project
 RUN ./gradlew build -x test
 
-# Expose port (Render uses dynamic PORT)
-EXPOSE 8080
-
-# Run the jar file
+# Run app
 CMD ["sh", "-c", "java -jar build/libs/*.jar"]
