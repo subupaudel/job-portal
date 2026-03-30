@@ -25,7 +25,7 @@ public class RecruiterPlanServiceImpl implements RecruiterPlanService {
     public void activatePlan(Long recruiterId, String planName, String paymentIntent) {
 
         Plan plan = planRepository.findByNameAndActiveTrue(planName)
-                .orElseThrow(() -> new RuntimeException("Plan not found"));
+                .orElseThrow(() -> JobException.notFound("Plan not found"));
 
         RecruiterPlan rp = RecruiterPlan.builder()
                 .recruiterId(recruiterId)
@@ -49,6 +49,6 @@ public class RecruiterPlanServiceImpl implements RecruiterPlanService {
 
         return recruiterPlanRepository
                 .findTopByRecruiterIdOrderByExpiryDateDesc(recruiterId)
-                .orElseThrow(() -> new JobException("No subscription found"));
+                .orElseThrow(() -> JobException.notFound("No active subscription found"));
     }
 }

@@ -3,6 +3,7 @@ package com.example.jobportal.service.impl;
 import com.example.jobportal.dto.ProfileResponse;
 import com.example.jobportal.entity.Recruiter;
 import com.example.jobportal.entity.User;
+import com.example.jobportal.exception.JobException;
 import com.example.jobportal.repository.RecruiterRepository;
 import com.example.jobportal.repository.UserRepository;
 import com.example.jobportal.service.AdminService;
@@ -22,9 +23,8 @@ public class AdminServiceImpl implements AdminService {
     // ---------------- DELETE ADMIN ACCOUNT ----------------
     @Override
     public void deleteAdminAccount(Long adminUserId) {
-
         User admin = userRepository.findById(adminUserId)
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
+                .orElseThrow(() -> JobException.notFound("Admin not found"));
 
         userRepository.delete(admin);
     }
@@ -32,9 +32,8 @@ public class AdminServiceImpl implements AdminService {
     // ---------------- RESET RECRUITER REPORT ----------------
     @Override
     public void resetRecruiterReport(Long recruiterId) {
-
         Recruiter recruiter = recruiterRepository.findById(recruiterId)
-                .orElseThrow(() -> new RuntimeException("Recruiter not found"));
+                .orElseThrow(() -> JobException.notFound("Recruiter not found"));
 
         recruiter.setReportCount(0);
         recruiterRepository.save(recruiter);
@@ -43,9 +42,8 @@ public class AdminServiceImpl implements AdminService {
     // ---------------- DELETE RECRUITER ----------------
     @Override
     public void deleteRecruiter(Long recruiterId) {
-
         Recruiter recruiter = recruiterRepository.findById(recruiterId)
-                .orElseThrow(() -> new RuntimeException("Recruiter not found"));
+                .orElseThrow(() -> JobException.notFound("Recruiter not found"));
 
         User user = recruiter.getUser();
 
@@ -65,7 +63,6 @@ public class AdminServiceImpl implements AdminService {
 
     // ---------------- MAPPER ----------------
     private ProfileResponse mapToResponse(Recruiter recruiter) {
-
         return ProfileResponse.builder()
                 .userId(recruiter.getUser().getId())
                 .email(recruiter.getUser().getEmail())
