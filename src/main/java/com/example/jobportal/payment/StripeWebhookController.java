@@ -25,7 +25,7 @@ public class StripeWebhookController {
 
     private final RecruiterPlanService recruiterPlanService;
 
-    private final String endpointSecret = "whsec_371097d2a919cf71c18aae6cc4f10ab90d470a130152e0e71a169cc41aee11fc";
+    private final String endpointSecret = "whsec_6a20f40bdba58b12f86ea6075c9cc950ccfa51e0f45e9825626bab495bf6795c";
 
     @PostMapping
     public ResponseEntity<String> handleWebhook(@RequestBody String payload,

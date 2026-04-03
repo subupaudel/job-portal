@@ -25,7 +25,7 @@ public class PaymentService {
 
         SessionCreateParams params = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
-                .setSuccessUrl("http://localhost:8080/payment/success?recruiterId=" + recruiterId)
+                .setSuccessUrl("http://localhost:3000/dashboard/recruiter/jobs")
                 .setCancelUrl("http://localhost:8080/payment/cancel")
                 .addLineItem(
                         SessionCreateParams.LineItem.builder()
