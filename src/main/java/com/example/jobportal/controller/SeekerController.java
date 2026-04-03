@@ -145,4 +145,14 @@ public class SeekerController {
 
         return ResponseEntity.ok(jobs);
     }
+
+    // ---------------- VIEW ALL OPEN JOBS ----------------
+    @GetMapping("/jobs")
+    public ResponseEntity<?> getAllJobs() {
+
+        var jobs = jobService.getAllOpenJobs();
+
+        return ResponseEntity.ok(jobs);
+    }
+
 }

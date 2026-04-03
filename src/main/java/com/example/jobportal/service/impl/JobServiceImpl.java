@@ -113,6 +113,16 @@ public class JobServiceImpl implements JobService {
                 .toList();
     }
 
+    @Override
+    public List<JobResponse> getAllOpenJobs() {
+
+        return jobRepository.findByStatus(JobStatus.OPEN)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+
     private JobResponse mapToResponse(Job job) {
         return JobResponse.builder()
                 .id(job.getId())

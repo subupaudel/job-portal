@@ -11,5 +11,5 @@ import java.util.List;
 public interface JobRepository extends JpaRepository<Job, Long> {
     List<Job> findByRecruiter(Recruiter recruiter);
 
-    Collection<Object> findByStatus(JobStatus jobStatus);
+    List<Job> findByStatus(JobStatus status);
 }
