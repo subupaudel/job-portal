@@ -48,9 +48,8 @@ public class AdminController {
     }
 
     @GetMapping("/recruiters/reported")
-    public ResponseEntity<List<ProfileResponse>> getReportedRecruiters(
-            @RequestParam(defaultValue = "20") int minReports) {
-        List<ProfileResponse> recruiters = adminService.getReportedRecruiters(minReports);
+    public ResponseEntity<List<ProfileResponse>> getReportedRecruiters() {
+        List<ProfileResponse> recruiters = adminService.getReportedRecruiters();
         return ResponseEntity.ok(recruiters);
     }
 

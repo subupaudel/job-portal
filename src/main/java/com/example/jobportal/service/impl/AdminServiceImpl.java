@@ -53,8 +53,8 @@ public class AdminServiceImpl implements AdminService {
 
     // ---------------- GET REPORTED RECRUITERS ----------------
     @Override
-    public List<ProfileResponse> getReportedRecruiters(int threshold) {
-        List<Recruiter> recruiters = recruiterRepository.findByReportCountGreaterThan(threshold);
+    public List<ProfileResponse> getReportedRecruiters() {
+        List<Recruiter> recruiters = recruiterRepository.findByReportCountGreaterThan(0);
 
         return recruiters.stream()
                 .map(this::mapToResponse)
