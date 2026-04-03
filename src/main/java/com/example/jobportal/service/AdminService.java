@@ -14,6 +14,6 @@ public interface AdminService {
     void deleteRecruiter(Long recruiterId);
 
     // get all reported recruiters
-    List<ProfileResponse> getReportedRecruiters(int threshold);
+    List<ProfileResponse> getReportedRecruiters();
 
 }
