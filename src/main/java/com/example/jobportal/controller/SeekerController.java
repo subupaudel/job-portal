@@ -155,4 +155,13 @@ public class SeekerController {
         return ResponseEntity.ok(jobs);
     }
 
+    // ---------------- GET JOB BY ID ----------------
+    @GetMapping("/jobs/{jobId}")
+    public ResponseEntity<?> getJobById(@PathVariable Long jobId) {
+
+        var job = jobService.getJobById(jobId);
+
+        return ResponseEntity.ok(job);
+    }
+
 }

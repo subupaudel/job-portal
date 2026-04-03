@@ -122,6 +122,20 @@ public class JobServiceImpl implements JobService {
                 .toList();
     }
 
+    @Override
+    public JobResponse getJobById(Long jobId) {
+
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> JobException.notFound("Job not found"));
+
+        // Optional: Only allow OPEN jobs for seekers
+        if (job.getStatus() != JobStatus.OPEN) {
+            throw JobException.badRequest("Job is not available");
+        }
+
+        return mapToResponse(job);
+    }
+
 
     private JobResponse mapToResponse(Job job) {
         return JobResponse.builder()

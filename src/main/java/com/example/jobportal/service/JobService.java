@@ -17,4 +17,5 @@ public interface JobService {
     Object searchJobs(String keyword, String location, Double minSalary);
     List<JobResponse> getAllOpenJobs();
 
+    JobResponse getJobById(Long jobId);
 }
