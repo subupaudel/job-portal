@@ -1,13 +1,12 @@
 package com.example.jobportal.controller;
 
-import com.example.jobportal.dto.JobRequest;
-import com.example.jobportal.dto.JobResponse;
-import com.example.jobportal.dto.RecruiterRequest;
-import com.example.jobportal.dto.ProfileResponse;
+import com.example.jobportal.dto.*;
+import com.example.jobportal.entity.JobApplication;
 import com.example.jobportal.entity.Recruiter;
 import com.example.jobportal.entity.RecruiterPlan;
 import com.example.jobportal.repository.RecruiterRepository;
 import com.example.jobportal.security.JwtUtil;
+import com.example.jobportal.service.JobApplicationService;
 import com.example.jobportal.service.JobService;
 import com.example.jobportal.service.RecruiterPlanService;
 import com.example.jobportal.service.RecruiterService;
@@ -28,6 +27,7 @@ public class RecruiterController {
     private final JwtUtil jwtUtil;
     private final RecruiterRepository recruiterRepository;
     private final RecruiterPlanService recruiterPlanService;
+    private final JobApplicationService jobApplicationService;
 
 
     @PostMapping(value = "/profile", consumes = "multipart/form-data")
@@ -143,5 +143,50 @@ public class RecruiterController {
         return ResponseEntity.ok(plan);
     }
 
+    @GetMapping("/applications")
+    public ResponseEntity<List<JobApplication>> getMyApplications(
+            @RequestHeader("Authorization") String authHeader) {
+
+        String token = jwtUtil.extractToken(authHeader);
+        Long userId = jwtUtil.getUserIdFromToken(token);
+
+        List<JobApplication> applications =
+                jobApplicationService.getApplicationsForRecruiter(userId);
+
+        return ResponseEntity.ok(applications);
+    }
+
+    @GetMapping("/jobs/{jobId}/applications")
+    public ResponseEntity<List<JobApplication>> getApplicationsForJob(
+            @PathVariable Long jobId,
+            @RequestHeader("Authorization") String authHeader) {
+
+        String token = jwtUtil.extractToken(authHeader);
+        Long userId = jwtUtil.getUserIdFromToken(token);
+
+        List<JobApplication> applications =
+                jobApplicationService.getApplicationsForRecruiterJob(jobId, userId);
+
+        return ResponseEntity.ok(applications);
+    }
+
+    @PutMapping("/applications/{applicationId}/status")
+    public ResponseEntity<String> updateApplicationStatus(
+            @PathVariable Long applicationId,
+            @RequestBody ApplicationStatusUpdateRequest request,
+            @RequestHeader("Authorization") String authHeader) {
+
+        String token = jwtUtil.extractToken(authHeader);
+        Long userId = jwtUtil.getUserIdFromToken(token);
+
+        jobApplicationService.updateApplicationStatus(
+                applicationId,
+                userId,
+                request.getStatus(),
+                request.getInterviewDate()
+        );
+
+        return ResponseEntity.ok("Application status updated successfully");
+    }
 
 }
