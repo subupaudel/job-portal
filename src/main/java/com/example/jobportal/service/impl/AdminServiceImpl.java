@@ -20,7 +20,6 @@ public class AdminServiceImpl implements AdminService {
     private final UserRepository userRepository;
     private final RecruiterRepository recruiterRepository;
 
-    // ---------------- DELETE ADMIN ACCOUNT ----------------
     @Override
     public void deleteAdminAccount(Long adminUserId) {
         User admin = userRepository.findById(adminUserId)
@@ -29,7 +28,6 @@ public class AdminServiceImpl implements AdminService {
         userRepository.delete(admin);
     }
 
-    // ---------------- RESET RECRUITER REPORT ----------------
     @Override
     public void resetRecruiterReport(Long recruiterId) {
         Recruiter recruiter = recruiterRepository.findById(recruiterId)
@@ -39,7 +37,6 @@ public class AdminServiceImpl implements AdminService {
         recruiterRepository.save(recruiter);
     }
 
-    // ---------------- DELETE RECRUITER ----------------
     @Override
     public void deleteRecruiter(Long recruiterId) {
         Recruiter recruiter = recruiterRepository.findById(recruiterId)
@@ -51,7 +48,6 @@ public class AdminServiceImpl implements AdminService {
         userRepository.delete(user);
     }
 
-    // ---------------- GET REPORTED RECRUITERS ----------------
     @Override
     public List<ProfileResponse> getReportedRecruiters() {
         List<Recruiter> recruiters = recruiterRepository.findByReportCountGreaterThan(0);
@@ -61,7 +57,6 @@ public class AdminServiceImpl implements AdminService {
                 .collect(Collectors.toList());
     }
 
-    // ---------------- MAPPER ----------------
     private ProfileResponse mapToResponse(Recruiter recruiter) {
         return ProfileResponse.builder()
                 .userId(recruiter.getUser().getId())

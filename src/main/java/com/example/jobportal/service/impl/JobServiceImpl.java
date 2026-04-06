@@ -100,10 +100,8 @@ public class JobServiceImpl implements JobService {
             throw JobException.unauthorized("You are not allowed to delete this job");
         }
 
-        // ✅ DELETE APPLICATIONS FIRST
         jobApplicationRepository.deleteByJob(job);
 
-        // ✅ THEN DELETE JOB
         jobRepository.delete(job);
     }
 
@@ -136,7 +134,6 @@ public class JobServiceImpl implements JobService {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> JobException.notFound("Job not found"));
 
-        // Optional: Only allow OPEN jobs for seekers
         if (job.getStatus() != JobStatus.OPEN) {
             throw JobException.badRequest("Job is not available");
         }

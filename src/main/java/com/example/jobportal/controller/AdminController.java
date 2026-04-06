@@ -17,7 +17,6 @@ public class AdminController {
     private final AdminService adminService;
     private final JwtUtil jwtUtil;
 
-    // ---------------- DELETE OWN ACCOUNT ----------------
     @DeleteMapping
     public ResponseEntity<String> deleteOwnAccount(
             @RequestHeader("Authorization") String authHeader) {
@@ -29,7 +28,6 @@ public class AdminController {
         return ResponseEntity.ok("Admin account deleted successfully");
     }
 
-    // ---------------- RESET RECRUITER REPORT ----------------
     @PutMapping("/recruiter/{recruiterId}/reset-report")
     public ResponseEntity<String> resetRecruiterReport(@PathVariable Long recruiterId) {
 
@@ -38,7 +36,6 @@ public class AdminController {
         return ResponseEntity.ok("Recruiter report reset to 0");
     }
 
-    // ---------------- DELETE RECRUITER ----------------
     @DeleteMapping("/recruiter/{recruiterId}")
     public ResponseEntity<String> deleteRecruiter(@PathVariable Long recruiterId) {
 

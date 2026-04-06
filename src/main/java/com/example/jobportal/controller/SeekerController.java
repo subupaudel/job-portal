@@ -24,11 +24,9 @@ public class SeekerController {
     private final RecruiterService recruiterService;
     private final JobService jobService;
 
-    // ✅ NEW
     private final CloudinaryService cloudinaryService;
     private final JobApplicationService jobApplicationService;
 
-    // ---------------- PROFILE ----------------
 
     @PostMapping("/profile")
     public ResponseEntity<SeekerResponse> update(
@@ -55,7 +53,6 @@ public class SeekerController {
         return ResponseEntity.ok(seekerService.createProfile(userId, request));
     }
 
-    // ---------------- APPLY JOB (🔥 NEW FEATURE) ----------------
 
     @PostMapping(value = "/apply/{jobId}", consumes = "multipart/form-data")
     public ResponseEntity<?> applyJob(
@@ -64,43 +61,34 @@ public class SeekerController {
             @RequestParam(value = "coverLetter", required = false) String coverLetter,
             @RequestHeader("Authorization") String authHeader) {
 
-        // 🔐 Extract user
         Long userId = jwtUtil.getUserIdFromToken(jwtUtil.extractToken(authHeader));
 
-        // ✅ Validate file
         if (resume == null || resume.isEmpty()) {
             return ResponseEntity.badRequest().body("Resume file is required");
         }
 
-        // ☁️ Upload to Cloudinary
         String result = cloudinaryService.uploadPDF(resume);
         String[] parts = result.split("\\|");
 
         String resumeUrl = parts[0];
         String publicId = parts[1];
 
-        // 💾 Save application
         jobApplicationService.applyJob(userId, jobId, resumeUrl, publicId, coverLetter);
 
         return ResponseEntity.ok("Job applied successfully");
     }
 
-    // ---------------- VIEW MY JOB APPLICATIONS ----------------
     @GetMapping("/applications")
     public ResponseEntity<?> getMyApplications(@RequestHeader("Authorization") String authHeader) {
 
         Long userId = jwtUtil.getUserIdFromToken(jwtUtil.extractToken(authHeader));
 
-        // 🔑 Get seekerId from SeekerService
         Long seekerId = seekerService.getSeekerIdByUserId(userId);
 
-        // 💾 Fetch applications for this seeker
         var applications = jobApplicationService.getApplicationsBySeeker(seekerId);
-        // ✅ Return as JSON
         return ResponseEntity.ok(applications);
     }
 
-    // ---------------- VIEW RECRUITER ----------------
 
     @GetMapping("/recruiter/{recruiterId}")
     public ResponseEntity<ProfileResponse> viewRecruiterProfile(
@@ -109,7 +97,6 @@ public class SeekerController {
         return ResponseEntity.ok(recruiterService.getRecruiterProfile(recruiterId));
     }
 
-    // ---------------- REPORT ----------------
 
     @PostMapping("/report/{recruiterId}")
     public ResponseEntity<String> reportRecruiter(
@@ -122,7 +109,6 @@ public class SeekerController {
         return ResponseEntity.ok("Recruiter reported successfully");
     }
 
-    // ---------------- RECOMMENDED JOBS ----------------
     @GetMapping("/recommended-jobs")
     public ResponseEntity<?> getRecommendedJobs(
             @RequestHeader("Authorization") String authHeader) {
@@ -134,7 +120,6 @@ public class SeekerController {
         return ResponseEntity.ok(jobs);
     }
 
-    // ---------------- SEARCH JOBS ----------------
     @GetMapping("/search")
     public ResponseEntity<?> searchJobs(
             @RequestParam(required = false) String keyword,
@@ -146,7 +131,6 @@ public class SeekerController {
         return ResponseEntity.ok(jobs);
     }
 
-    // ---------------- VIEW ALL OPEN JOBS ----------------
     @GetMapping("/jobs")
     public ResponseEntity<?> getAllJobs() {
 
@@ -155,7 +139,6 @@ public class SeekerController {
         return ResponseEntity.ok(jobs);
     }
 
-    // ---------------- GET JOB BY ID ----------------
     @GetMapping("/jobs/{jobId}")
     public ResponseEntity<?> getJobById(@PathVariable Long jobId) {
 
