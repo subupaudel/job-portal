@@ -43,7 +43,11 @@ public class CloudinaryService {
                     file.getBytes(),
                     ObjectUtils.asMap(
                             "folder", "seekers/resumes",
-                            "resource_type", "raw"
+                            "resource_type", "image",
+                            "format", "pdf",
+                            "use_filename", true,
+                            "unique_filename", false
+
                     )
             );
             return buildResult(uploadResult);
