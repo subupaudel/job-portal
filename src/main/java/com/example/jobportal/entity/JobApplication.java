@@ -48,4 +48,8 @@ public class JobApplication {
     // Application timestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date appliedAt;
+
+    // Interview date & time (only when shortlisted)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date interviewDate;
 }

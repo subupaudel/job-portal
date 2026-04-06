@@ -20,6 +20,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     private final JobApplicationRepository applicationRepository;
     private final JobRepository jobRepository;
     private final SeekerRepository seekerRepository;
+    private final RecruiterRepository recruiterRepository;
 
     // ---------------- APPLY JOB ----------------
     @Override
@@ -49,14 +50,6 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                 .build();
 
         applicationRepository.save(application);
-    }
-
-    // ---------------- GET APPLICATIONS BY JOB ----------------
-    @Override
-    public List<JobApplication> getApplicationsForJob(Long jobId) {
-        Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> JobException.notFound("Job not found"));
-        return applicationRepository.findByJob(job);
     }
 
     // ---------------- GET APPLICATIONS BY SEEKER ----------------
@@ -101,6 +94,73 @@ public class JobApplicationServiceImpl implements JobApplicationService {
         }
 
         return false;
+    }
+
+    @Override
+    public List<JobApplication> getApplicationsForRecruiter(Long userId) {
+
+        Recruiter recruiter = recruiterRepository.getRecruiterByUserId(userId);
+
+        if (recruiter == null) {
+            throw JobException.notFound("Recruiter not found");
+        }
+
+        return applicationRepository.findByRecruiter(recruiter);
+    }
+
+    @Override
+    public List<JobApplication> getApplicationsForRecruiterJob(Long jobId, Long userId) {
+
+        // ✅ Get recruiter from logged-in user
+        Recruiter recruiter = recruiterRepository.getRecruiterByUserId(userId);
+
+        if (recruiter == null) {
+            throw JobException.notFound("Recruiter not found");
+        }
+
+        // ✅ Get job
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> JobException.notFound("Job not found"));
+
+        // 🔒 Security check (VERY IMPORTANT)
+        if (!job.getRecruiter().getId().equals(recruiter.getId())) {
+            throw JobException.badRequest("You are not allowed to view these applications");
+        }
+
+        // ✅ Fetch applications for this job only
+        return applicationRepository.findByJob(job);
+    }
+
+    @Override
+    public void updateApplicationStatus(Long applicationId,
+                                        Long recruiterUserId,
+                                        ApplicationStatus status,
+                                        Date interviewDate) {
+
+        JobApplication application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> JobException.notFound("Application not found"));
+
+        // 🔒 Security: Only job owner can update
+        if (!application.getRecruiter().getUser().getId().equals(recruiterUserId)) {
+            throw JobException.badRequest("You are not authorized to update this application");
+        }
+
+        // ✅ If shortlisted → interview date required
+        if (status == ApplicationStatus.SHORTLISTED) {
+            if (interviewDate == null) {
+                throw JobException.badRequest("Interview date is required for shortlisted candidates");
+            }
+            application.setInterviewDate(interviewDate);
+        }
+
+        // ❌ If rejected → clear interview date
+        if (status == ApplicationStatus.REJECTED) {
+            application.setInterviewDate(null);
+        }
+
+        application.setStatus(status);
+
+        applicationRepository.save(application);
     }
 
     private JobResponse mapToResponse(Job job) {
