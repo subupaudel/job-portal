@@ -7,9 +7,11 @@ import com.example.jobportal.entity.Recruiter;
 import com.example.jobportal.entity.RecruiterPlan;
 import com.example.jobportal.enums.JobStatus;
 import com.example.jobportal.exception.JobException;
+import com.example.jobportal.repository.JobApplicationRepository;
 import com.example.jobportal.repository.JobRepository;
 import com.example.jobportal.repository.RecruiterPlanRepository;
 import com.example.jobportal.repository.RecruiterRepository;
+import com.example.jobportal.service.JobApplicationService;
 import com.example.jobportal.service.JobService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ public class JobServiceImpl implements JobService {
 
     private final JobRepository jobRepository;
     private final RecruiterPlanRepository recruiterPlanRepository;
+    private final JobApplicationRepository jobApplicationRepository;
 
     @Override
     public JobResponse createJob(Recruiter recruiter, JobRequest request) {
@@ -97,8 +100,13 @@ public class JobServiceImpl implements JobService {
             throw JobException.unauthorized("You are not allowed to delete this job");
         }
 
+        // ✅ DELETE APPLICATIONS FIRST
+        jobApplicationRepository.deleteByJob(job);
+
+        // ✅ THEN DELETE JOB
         jobRepository.delete(job);
     }
+
 
     @Override
     public List<JobResponse> searchJobs(String keyword, String location, Double minSalary) {
