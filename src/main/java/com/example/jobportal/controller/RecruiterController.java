@@ -73,62 +73,6 @@ public class RecruiterController {
         return ResponseEntity.ok("Recruiter profile deleted successfully");
     }
 
-
-    @PostMapping("/jobs")
-    public ResponseEntity<JobResponse> createJob(
-            @RequestBody JobRequest jobRequest,
-            @RequestHeader("Authorization") String authHeader) {
-
-        String token = jwtUtil.extractToken(authHeader);
-        Long userId = jwtUtil.getUserIdFromToken(token);
-
-        Recruiter recruiter = recruiterRepository.getRecruiterByUserId(userId);
-
-        JobResponse createdJob = jobService.createJob(recruiter, jobRequest);
-        return new ResponseEntity<>(createdJob, HttpStatus.CREATED);
-    }
-
-    @GetMapping("/jobs")
-    public ResponseEntity<List<JobResponse>> getOwnJobs(
-            @RequestHeader("Authorization") String authHeader) {
-
-        String token = jwtUtil.extractToken(authHeader);
-        Long userId = jwtUtil.getUserIdFromToken(token);
-
-        Recruiter recruiter = recruiterRepository.getRecruiterByUserId(userId);
-
-        List<JobResponse> jobs = jobService.getJobsByRecruiter(recruiter);
-        return ResponseEntity.ok(jobs);
-    }
-
-    @PutMapping("/jobs/{jobId}")
-    public ResponseEntity<JobResponse> updateJob(
-            @PathVariable Long jobId,
-            @RequestBody JobRequest jobRequest,
-            @RequestHeader("Authorization") String authHeader) {
-
-        String token = jwtUtil.extractToken(authHeader);
-        Long userId = jwtUtil.getUserIdFromToken(token);
-
-        JobResponse updatedJob =
-                jobService.updateJob(jobId, userId, jobRequest);
-
-        return ResponseEntity.ok(updatedJob);
-    }
-
-    @DeleteMapping("/jobs/{jobId}")
-    public ResponseEntity<Void> deleteJob(
-            @PathVariable Long jobId,
-            @RequestHeader("Authorization") String authHeader) {
-
-        String token = jwtUtil.extractToken(authHeader);
-        Long userId = jwtUtil.getUserIdFromToken(token);
-
-        jobService.deleteJob(jobId, userId);
-
-        return ResponseEntity.noContent().build();
-    }
-
     @GetMapping("/subscription")
     public ResponseEntity<RecruiterPlan> getMySubscription(
             @RequestHeader("Authorization") String authHeader) {
@@ -152,20 +96,6 @@ public class RecruiterController {
 
         List<JobApplication> applications =
                 jobApplicationService.getApplicationsForRecruiter(userId);
-
-        return ResponseEntity.ok(applications);
-    }
-
-    @GetMapping("/jobs/{jobId}/applications")
-    public ResponseEntity<List<JobApplication>> getApplicationsForJob(
-            @PathVariable Long jobId,
-            @RequestHeader("Authorization") String authHeader) {
-
-        String token = jwtUtil.extractToken(authHeader);
-        Long userId = jwtUtil.getUserIdFromToken(token);
-
-        List<JobApplication> applications =
-                jobApplicationService.getApplicationsForRecruiterJob(jobId, userId);
 
         return ResponseEntity.ok(applications);
     }
