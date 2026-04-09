@@ -22,7 +22,6 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     private final SeekerRepository seekerRepository;
     private final RecruiterRepository recruiterRepository;
 
-    // ---------------- APPLY JOB ----------------
     @Override
     public void applyJob(Long userId, Long jobId, String resumeUrl, String publicId, String coverLetter) {
 
@@ -52,7 +51,6 @@ public class JobApplicationServiceImpl implements JobApplicationService {
         applicationRepository.save(application);
     }
 
-    // ---------------- GET APPLICATIONS BY SEEKER ----------------
     @Override
     public List<JobApplication> getApplicationsBySeeker(Long seekerId) {
         Seeker seeker = seekerRepository.findById(seekerId)
@@ -60,7 +58,6 @@ public class JobApplicationServiceImpl implements JobApplicationService {
         return applicationRepository.findBySeeker(seeker);
     }
 
-    // ---------------- RECOMMENDED JOBS ----------------
     @Override
     public List<JobResponse> getRecommendedJobs(Long userId) {
 
@@ -111,23 +108,19 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     @Override
     public List<JobApplication> getApplicationsForRecruiterJob(Long jobId, Long userId) {
 
-        // ✅ Get recruiter from logged-in user
         Recruiter recruiter = recruiterRepository.getRecruiterByUserId(userId);
 
         if (recruiter == null) {
             throw JobException.notFound("Recruiter not found");
         }
 
-        // ✅ Get job
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> JobException.notFound("Job not found"));
 
-        // 🔒 Security check (VERY IMPORTANT)
         if (!job.getRecruiter().getId().equals(recruiter.getId())) {
             throw JobException.badRequest("You are not allowed to view these applications");
         }
 
-        // ✅ Fetch applications for this job only
         return applicationRepository.findByJob(job);
     }
 
@@ -140,12 +133,10 @@ public class JobApplicationServiceImpl implements JobApplicationService {
         JobApplication application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> JobException.notFound("Application not found"));
 
-        // 🔒 Security: Only job owner can update
         if (!application.getRecruiter().getUser().getId().equals(recruiterUserId)) {
             throw JobException.badRequest("You are not authorized to update this application");
         }
 
-        // ✅ If shortlisted → interview date required
         if (status == ApplicationStatus.SHORTLISTED) {
             if (interviewDate == null) {
                 throw JobException.badRequest("Interview date is required for shortlisted candidates");
@@ -153,7 +144,6 @@ public class JobApplicationServiceImpl implements JobApplicationService {
             application.setInterviewDate(interviewDate);
         }
 
-        // ❌ If rejected → clear interview date
         if (status == ApplicationStatus.REJECTED) {
             application.setInterviewDate(null);
         }

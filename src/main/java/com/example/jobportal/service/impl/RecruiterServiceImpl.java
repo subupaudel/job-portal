@@ -32,7 +32,6 @@ public class RecruiterServiceImpl implements RecruiterService {
         Recruiter recruiter = recruiterRepository.findByUserId(userId)
                 .orElse(Recruiter.builder().user(user).build());
 
-        // Check unique company email
         if (request.getCompanyEmail() != null &&
                 !request.getCompanyEmail().equals(recruiter.getCompanyEmail()) &&
                 recruiterRepository.existsByCompanyEmailAndUserIdNot(request.getCompanyEmail(), userId)) {
@@ -40,7 +39,6 @@ public class RecruiterServiceImpl implements RecruiterService {
             throw JobException.badRequest("Company email already in use.");
         }
 
-        // Check unique PAN
         if (request.getPanNumber() != null &&
                 !request.getPanNumber().equals(recruiter.getPanNumber()) &&
                 recruiterRepository.existsByPanNumberAndUserIdNot(request.getPanNumber(), userId)) {
@@ -48,7 +46,6 @@ public class RecruiterServiceImpl implements RecruiterService {
             throw JobException.badRequest("PAN number already registered.");
         }
 
-        // Update fields
         if (request.getCompanyName() != null) recruiter.setCompanyName(request.getCompanyName());
         if (request.getCompanyEmail() != null) recruiter.setCompanyEmail(request.getCompanyEmail());
         if (request.getContactPerson() != null) recruiter.setContactPerson(request.getContactPerson());
@@ -59,16 +56,13 @@ public class RecruiterServiceImpl implements RecruiterService {
         if (request.getPanNumber() != null) recruiter.setPanNumber(request.getPanNumber());
         if (request.getDescription() != null) recruiter.setDescription(request.getDescription());
 
-        // Handle logo upload
         if (request.getLogo() != null && !request.getLogo().isEmpty()) {
             try {
-                // Delete old logo
                 if (recruiter.getPublicId() != null) {
                     cloudinary.uploader().destroy(recruiter.getPublicId(),
                             ObjectUtils.asMap("invalidate", true));
                 }
 
-                // Upload new logo
                 String uploadResult = cloudinaryService.uploadImage(request.getLogo());
                 String[] parts = uploadResult.split("\\|");
 
@@ -136,7 +130,6 @@ public class RecruiterServiceImpl implements RecruiterService {
         Recruiter recruiter = recruiterRepository.findByUserId(user.getId())
                 .orElseThrow(() -> JobException.notFound("Recruiter profile not found"));
 
-        // Delete logo if exists
         if (recruiter.getPublicId() != null) {
             cloudinaryService.deleteFile(recruiter.getPublicId());
         }

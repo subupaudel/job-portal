@@ -20,7 +20,6 @@ public class RecruiterPlanServiceImpl implements RecruiterPlanService {
     private final RecruiterPlanRepository recruiterPlanRepository;
     private final PlanRepository planRepository;
 
-    // ---------------- ACTIVATE PLAN ----------------
     @Override
     public void activatePlan(Long recruiterId, String planName, String paymentIntent) {
 
@@ -43,7 +42,6 @@ public class RecruiterPlanServiceImpl implements RecruiterPlanService {
         System.out.println("Plan activated for recruiterId: " + recruiterId);
     }
 
-    // ---------------- GET CURRENT PLAN ----------------
     @Override
     public RecruiterPlan getCurrentPlan(Long recruiterId) {
 
