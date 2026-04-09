@@ -37,6 +37,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/stripe/webhook").permitAll()
+                        .requestMatchers("/jobs/**").permitAll()
+                        .requestMatchers("/seeker/jobs/**").permitAll()
                         .requestMatchers("/seeker/**").hasAnyRole("JOB_SEEKER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/seeker/apply/**").hasAnyRole("JOB_SEEKER", "ADMIN")
                         .requestMatchers("/recruiter/**").hasAnyRole("JOB_RECRUITER", "ADMIN")
