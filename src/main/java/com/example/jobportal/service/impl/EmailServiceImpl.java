@@ -13,6 +13,15 @@ public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
 
+    public void sendOtp(String toEmail, String otp) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setSubject("OTP Verification");
+        message.setText("Your OTP is: " + otp);
+
+        mailSender.send(message);
+    }
+
     @Override
     public void sendSimpleMessage(MailBody mailBody){
 

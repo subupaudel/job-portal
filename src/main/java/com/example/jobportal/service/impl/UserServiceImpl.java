@@ -1,18 +1,23 @@
 package com.example.jobportal.service.impl;
 
 import com.example.jobportal.dto.*;
+import com.example.jobportal.entity.Otp;
 import com.example.jobportal.entity.User;
 import com.example.jobportal.exception.JobException;
+import com.example.jobportal.repository.OtpRepository;
 import com.example.jobportal.repository.UserRepository;
 import com.example.jobportal.security.JwtUtil;
+import com.example.jobportal.service.EmailService;
 import com.example.jobportal.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -21,29 +26,35 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final OtpRepository otpRepository;
+    private final EmailService emailService;
+    private Map<String, RegisterRequest> tempUserStore = new HashMap<>();
 
     @Override
-    public Response registerUser(RegisterRequest request) {
+    public Response sendOtp(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw JobException.badRequest("User already exists");
+            throw JobException.badRequest("Email already registered");
         }
 
-        User user = User.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole())
-                .createdAt(LocalDateTime.now())
-                .build();
+        String otp = String.valueOf(new Random().nextInt(900000) + 100000);
 
-        try {
-            userRepository.save(user);
-        } catch (Exception e) {
-            throw JobException.badRequest("Failed to register user. Please try again.");
-        }
+        tempUserStore.put(request.getEmail(), request);
 
-        return new Response("User registered successfully", true);
+        Otp otpEntity = otpRepository.findByEmail(request.getEmail())
+                .orElse(new Otp());
+
+        otpEntity.setEmail(request.getEmail());
+        otpEntity.setOtp(otp);
+        otpEntity.setExpiryTime(LocalDateTime.now().plusMinutes(5));
+
+        otpRepository.save(otpEntity);
+
+        emailService.sendOtp(request.getEmail(), otp);
+
+        System.out.println("OTP: " + otp);
+
+        return new Response("OTP sent successfully");
     }
 
     @Override
@@ -79,5 +90,48 @@ public class UserServiceImpl implements UserService {
         } catch (Exception e) {
             throw JobException.badRequest("Failed to retrieve users. Please try again.");
         }
+    }
+
+    @Override
+    public Response verifyOtp(OtpRequest request) {
+
+        Otp otpEntity = otpRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> JobException.badRequest("OTP not found"));
+
+        if (otpEntity.getExpiryTime().isBefore(LocalDateTime.now())) {
+            throw JobException.badRequest("OTP expired");
+        }
+
+        if (!otpEntity.getOtp().equals(request.getOtp())) {
+            throw JobException.badRequest("Invalid OTP");
+        }
+
+        RegisterRequest registerRequest = tempUserStore.get(request.getEmail());
+
+        if (registerRequest == null) {
+            throw JobException.badRequest("Registration data not found");
+        }
+
+        registerUser(registerRequest);
+
+        tempUserStore.remove(request.getEmail());
+        otpRepository.delete(otpEntity);
+
+        return new Response("User registered successfully");
+    }
+
+    private void registerUser(RegisterRequest request) {
+
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw JobException.badRequest("Email already exists");
+        }
+
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(request.getRole());
+
+        userRepository.save(user);
     }
 }

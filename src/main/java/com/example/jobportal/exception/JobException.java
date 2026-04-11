@@ -14,7 +14,6 @@ public class JobException extends RuntimeException {
     return status;
   }
 
-  // Convenience static methods for common cases
   public static JobException notFound(String message) {
     return new JobException(message, HttpStatus.NOT_FOUND);
   }
