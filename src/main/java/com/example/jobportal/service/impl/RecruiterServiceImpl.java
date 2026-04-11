@@ -74,7 +74,11 @@ public class RecruiterServiceImpl implements RecruiterService {
             }
         }
 
-        recruiterRepository.save(recruiter);
+        try {
+            recruiterRepository.save(recruiter);
+        } catch (Exception e) {
+            throw JobException.internalServerError("Failed to save recruiter profile");
+        }
 
         return ProfileResponse.builder()
                 .userId(user.getId())

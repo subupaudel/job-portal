@@ -37,7 +37,11 @@ public class UserServiceImpl implements UserService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        userRepository.save(user);
+        try {
+            userRepository.save(user);
+        } catch (Exception e) {
+            throw JobException.badRequest("Failed to register user. Please try again.");
+        }
 
         return new Response("User registered successfully", true);
     }
@@ -64,12 +68,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getAllUsers() {
-        List<User> users = userRepository.findAll();
+        try {
+            List<User> users = userRepository.findAll();
 
-        if (users.isEmpty()) {
-            throw JobException.notFound("No users found");
+            if (users.isEmpty()) {
+                throw JobException.notFound("No users found");
+            }
+
+            return users;
+        } catch (Exception e) {
+            throw JobException.badRequest("Failed to retrieve users. Please try again.");
         }
-
-        return users;
     }
 }

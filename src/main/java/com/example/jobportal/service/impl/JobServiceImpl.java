@@ -52,10 +52,19 @@ public class JobServiceImpl implements JobService {
                 .recruiter(recruiter)
                 .build();
 
-        Job saved = jobRepository.save(job);
+        Job saved;
+        try {
+            saved = jobRepository.save(job);
+        } catch (Exception e) {
+            throw JobException.internalServerError("Failed to save job");
+        }
 
         plan.setJobsUsed(plan.getJobsUsed() + 1);
-        recruiterPlanRepository.save(plan);
+        try {
+            recruiterPlanRepository.save(plan);
+        } catch (Exception e) {
+            throw JobException.internalServerError("Failed to update recruiter plan");
+        }
 
         return mapToResponse(saved);
     }
@@ -87,7 +96,11 @@ public class JobServiceImpl implements JobService {
             job.setStatus(request.getStatus());
         }
 
-        return mapToResponse(jobRepository.save(job));
+        try {
+            return mapToResponse(jobRepository.save(job));
+        } catch (Exception e) {
+            throw JobException.internalServerError("Failed to update job");
+        }
     }
 
     @Override
@@ -100,9 +113,17 @@ public class JobServiceImpl implements JobService {
             throw JobException.unauthorized("You are not allowed to delete this job");
         }
 
-        jobApplicationRepository.deleteByJob(job);
+        try {
+            jobApplicationRepository.deleteByJob(job);
+        } catch (Exception e) {
+            throw JobException.internalServerError("Failed to delete job applications");
+        }
 
-        jobRepository.delete(job);
+        try {
+            jobRepository.delete(job);
+        } catch (Exception e) {
+            throw JobException.internalServerError("Failed to delete job");
+        }
     }
 
 
@@ -143,15 +164,19 @@ public class JobServiceImpl implements JobService {
 
 
     private JobResponse mapToResponse(Job job) {
-        return JobResponse.builder()
-                .id(job.getId())
-                .title(job.getTitle())
-                .description(job.getDescription())
-                .location(job.getLocation())
-                .salary(job.getSalary())
-                .status(job.getStatus())
-                .recruiterId(job.getRecruiter().getId())
-                .recruiterName(job.getRecruiter().getCompanyName())
-                .build();
+        try {
+            return JobResponse.builder()
+                    .id(job.getId())
+                    .title(job.getTitle())
+                    .description(job.getDescription())
+                    .location(job.getLocation())
+                    .salary(job.getSalary())
+                    .status(job.getStatus())
+                    .recruiterId(job.getRecruiter() != null ? job.getRecruiter().getId() : null)
+                    .recruiterName(job.getRecruiter() != null ? job.getRecruiter().getCompanyName() : null)
+                    .build();
+        } catch (Exception e) {
+            throw JobException.internalServerError("Failed to map job response");
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.example.jobportal.service.impl;
 
 import com.example.jobportal.entity.Plan;
+import com.example.jobportal.exception.JobException;
 import com.example.jobportal.repository.PlanRepository;
 import com.example.jobportal.service.PlanService;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,11 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public Plan getPlanByName(String name) {
-        return planRepository.findByNameAndActiveTrue(name)
-                .orElseThrow(() -> new RuntimeException("Plan not found"));
+        try {
+            return planRepository.findByNameAndActiveTrue(name)
+                    .orElseThrow(() -> JobException.notFound("Plan not found"));
+        } catch (Exception e) {
+            throw JobException.badRequest("Failed to retrieve plan. Please try again.");
+        }
     }
 }

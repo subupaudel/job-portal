@@ -30,4 +30,8 @@ public class JobException extends RuntimeException {
   public static JobException unauthorized(String message) {
     return new JobException(message, HttpStatus.UNAUTHORIZED);
   }
+
+  public static JobException internalServerError(String message) {
+    return new JobException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
 }
